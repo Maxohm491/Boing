@@ -2,7 +2,7 @@ module Engine.src.engine;
 
 import std.stdio;
 
-// This will be to actually play the game
+// Main entry point: from here choose play game or edit levels
 void main()
 {
     writeln("Hello world");
