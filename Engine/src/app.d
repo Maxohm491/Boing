@@ -75,6 +75,6 @@ void main()
     MainApplication mainApp = new MainApplication();
     mainApp.Run();
     
-    // TEMPORARY: just run editor
+    // TEMPORARILY just run editor by defauly
     mainApp.SwitchRunningApp();
 }
