@@ -1,4 +1,4 @@
-module Engine.src.constants;
+module constants;
 
 immutable int SCREEN_X = 1280; // Pixels
 immutable int SCREEN_Y = 960; // Pixels

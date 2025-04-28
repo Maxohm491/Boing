@@ -1,4 +1,4 @@
-module Engine.src.LevelEditor.UI;
+module LevelEditor.UI;
 
 import bindbc.sdl;
 
