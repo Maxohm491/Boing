@@ -20,14 +20,17 @@ shared static this(){
     version(Windows){
         writeln("Searching for SDL on Windows");
         ret = loadSDL("SDL2.dll");
+        loadSDLMixer();
     }
     version(OSX){
         writeln("Searching for SDL on Mac");
         ret = loadSDL();
+        loadSDLMixer();
     }
     version(linux){ 
         writeln("Searching for SDL on Linux");
         ret = loadSDL();
+        loadSDLMixer();
     }
 
     // Error if SDL cannot be loaded
@@ -46,6 +49,14 @@ shared static this(){
     // Initialize SDL
     if(SDL_Init(SDL_INIT_EVERYTHING) !=0){
         writeln("SDL_Init: ", fromStringz(SDL_GetError()));
+    }
+
+    if(0==Mix_Init(1)){
+        writeln("Mix_init failed");
+    }
+    // Initialize SDL_Mixer
+    if(Mix_OpenAudio(44_100,MIX_DEFAULT_FORMAT,2,2048) == -1){
+        writeln("Mix loading error: ",Mix_GetError());
     }
 }
 
