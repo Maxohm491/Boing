@@ -15,7 +15,7 @@ class GameApplication : Application
     this(SDL_Renderer* r)
     {
         mRendererRef = r;
-		mScenes ~= new Scene(r);
+		mScenes ~= new Scene(r, 1);
     }
 
     void Input()

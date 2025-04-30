@@ -9,6 +9,7 @@ import bindbc.sdl;
 
 import GameCode.scripts.script;
 import GameCode.component;
+import GameCode.tilemapcomponents;
 
 class GameObject
 {
@@ -76,6 +77,13 @@ class GameObject
 		{
 			(cast(SpriteComponent) stat_sprite).Render();
 		}
+
+		// Render all tilemap sprites
+		auto tile_sprite = this.GetComponent(ComponentType.TILEMAP_SPRITE);
+		if (tile_sprite !is null)
+		{
+			(cast(TilemapSprite) tile_sprite).Render();
+		}
 	}
 
 	// Retrieve specific component type
@@ -141,6 +149,14 @@ GameObject GameObjectFactory(T...)(string name)
 		static if (component == ComponentType.SPRITE)
 		{
 			go.AddComponent!(component)(new SpriteComponent(go));
+		}
+		static if (component == ComponentType.TILEMAP_SPRITE)
+		{
+			go.AddComponent!(component)(new TilemapSprite(go));
+		}
+		static if (component == ComponentType.TILEMAP_COLLIDER)
+		{
+			go.AddComponent!(component)(new TilemapCollider(go));
 		}
 	}
 	return go;

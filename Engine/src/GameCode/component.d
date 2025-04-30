@@ -10,6 +10,7 @@ import bindbc.sdl;
 import GameCode.gameobject;
 import GameCode.resourcemanager;
 import std.math;
+import constants;
 
 enum ComponentType
 {
@@ -18,6 +19,8 @@ enum ComponentType
 	SPRITE,
 	SCRIPT,
 	INPUT,
+	TILEMAP_SPRITE,
+	TILEMAP_COLLIDER,
 	COLLIDER
 }
 
@@ -57,11 +60,14 @@ class ColliderComponent : IComponent
 
 	void Update()
 	{
-		mRect.x = cast(int) mTransformRef.x;
-		mRect.y = cast(int) mTransformRef.y;
+		// Round posittion to a pixel
+		// 8 pixels/tile
+		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f; 
+		mRect.x = cast(int) (round(mTransformRef.x / pixelWidth) * pixelWidth);
+		mRect.y = cast(int) (round(mTransformRef.y / pixelWidth) * pixelWidth);
 	}
 
-	// Recursively check the collidable tree
+	// Recursively check all collidables
 	string[] CheckCollisions(GameObject[] toCheck)
 	{
 		string[] toReturn;
@@ -84,7 +90,7 @@ class ColliderComponent : IComponent
 		return toReturn;
 	}
 
-	// Return everything that the collider has collided with since last frame, within the given tree
+	/// Return names of gameobjects that the collider has collided with since last frame
 	string[] GetCollisions()
 	{
 		return mCollisions;
@@ -141,7 +147,7 @@ class SpriteComponent : IComponent
 				newFrame.mRect.y = topBound;
 				newFrame.mRect.w = cast(int) formatJson["tileWidth"].integer;
 				newFrame.mRect.h = cast(int) formatJson["tileHeight"].integer;
-				newFrame.mDuration = 5;
+				newFrame.mDuration = 25;
 				mFrames ~= newFrame;
 			}
 		}
@@ -183,8 +189,11 @@ class SpriteComponent : IComponent
 			frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
 		}
 
-		mRect.x = cast(int) mTransformRef.x;
-		mRect.y = cast(int) mTransformRef.y;
+		// Round posittion to a pixel
+		// 8 pixels/tile
+		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f; 
+		mRect.x = cast(int) (round(mTransformRef.x / pixelWidth) * pixelWidth);
+		mRect.y = cast(int) (round(mTransformRef.y / pixelWidth) * pixelWidth);
 
 		SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(mRect), mTransformRef.GetAngle() * (180.0 / PI), null, SDL_RendererFlip
 				.SDL_FLIP_NONE);
@@ -196,17 +205,14 @@ class InputComponent : IComponent
 	// Input
 	bool leftPressed = false;
 	bool rightPressed = false;
-	bool shootPressed = false;
 	bool upPressed = false;
-	bool clicked = false;
-	int mouseX, mouseY;
 
 	this(GameObject owner)
 	{
 		mOwner = owner;
 	}
 
-	// -1 for left, 1 for right, 0 otherwise
+	/// Returns -1 for left, 1 for right, 0 otherwise
 	int GetDir()
 	{
 		if (leftPressed && !rightPressed)
@@ -231,10 +237,8 @@ class InputComponent : IComponent
 				leftPressed = true;
 			else if (key == SDLK_d || key == SDLK_RIGHT)
 				rightPressed = true;
-			else if (key == SDLK_w || key == SDLK_UP)
+			else if (key == SDLK_w || key == SDLK_UP || key == SDLK_SPACE)
 				upPressed = true;
-			else if (key == SDLK_SPACE)
-				shootPressed = true;
 			break;
 		case SDL_KEYUP:
 			auto key = event.key.keysym.sym;
@@ -242,18 +246,12 @@ class InputComponent : IComponent
 				leftPressed = false;
 			else if (key == SDLK_d || key == SDLK_RIGHT)
 				rightPressed = false;
-			else if (key == SDLK_w || key == SDLK_UP)
+			else if (key == SDLK_w || key == SDLK_UP || key == SDLK_SPACE)
 				upPressed = false;
-			else if (key == SDLK_SPACE)
-				shootPressed = false;
 			break;
 		default:
 			break;
 		}
-
-		// Get SDL Mouse coordinates
-		int mask = SDL_GetMouseState(&mouseX, &mouseY);
-		clicked = mask == SDL_BUTTON_LEFT;
 	}
 }
 
