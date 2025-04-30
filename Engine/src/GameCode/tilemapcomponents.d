@@ -81,4 +81,14 @@ class TilemapCollider : IComponent
     {
         mOwner = owner;
     }
+
+    /// Gets which tile a point is in. Returns: [x, y]
+    SDL_Point WhichTile(SDL_Point point) {
+        return SDL_Point(point.x / TILE_SIZE, point.y / TILE_SIZE);
+    }
+
+    /// Returns distance from the edges of the rect to the nearest wall, [x,-x,y,-y]
+    void GetWallDistance(SDL_Rect rect) {
+        int right = rect.x + rect.w;
+    }
 }

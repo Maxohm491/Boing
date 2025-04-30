@@ -122,6 +122,7 @@ class Scene
         sprite.LoadMetaData("./assets/images/tilemap.json");
         sprite.mRendererRef = mRendererRef;
         sprite.tiles = buf; // This is fine since the static array is stored by value
+        collider.tiles = buf;
         AddGameObject(tilemap);
 
         AddGameObject(player);
