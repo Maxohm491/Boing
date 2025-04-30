@@ -176,7 +176,7 @@ class Grid : Button
             break;
         case 5:
             if (end_x > -1)
-                tiles[start_x][start_y] = 16;
+                tiles[end_x][end_y] = 16;
             end_x = x_idx;
             end_y = y_idx;
             newValue = 20;
@@ -199,13 +199,13 @@ class Grid : Button
 
         // Check if spike or arrow had its wall removed
         if(newValue >= 16) { // if intangible
-            if(x_idx > 0 && (tiles[x_idx - 1][y_idx] == 18 || tiles[x_idx - 1][y_idx] == 26 )) // if arrow
+            if(x_idx > 0 && tiles[x_idx - 1][y_idx] == 18) // if arrow
                 tiles[x_idx - 1][y_idx] = 16; // set blank
-            if(x_idx < GRID_X - 1 && (tiles[x_idx + 1][y_idx] == 18 || tiles[x_idx + 1][y_idx] == 26 )) // if arrow
+            if(x_idx < GRID_X - 1 && tiles[x_idx + 1][y_idx] == 26 ) // if arrow
                 tiles[x_idx + 1][y_idx] = 16; // set blank
-            if(y_idx > 0 && (tiles[x_idx][y_idx - 1] == 17 || tiles[x_idx][y_idx - 1] == 23 )) // if spike
+            if(y_idx > 0 && tiles[x_idx][y_idx - 1] == 17 ) // if spike
                 tiles[x_idx][y_idx - 1] = 16; // set blank
-            if(y_idx < GRID_Y - 1 && (tiles[x_idx][y_idx + 1] == 17 || tiles[x_idx][y_idx + 1] == 23 )) // if spike
+            if(y_idx < GRID_Y - 1 && tiles[x_idx][y_idx + 1] == 23) // if spike
                 tiles[x_idx][y_idx + 1] = 16; // set blank
         }
 
