@@ -109,6 +109,12 @@ class Grid : Button
 
     int BrushToIndex(int x_idx, int y_idx) // 0 background, 1 platform, 2 spike, 3 arrow, 4 start, 5 end
     {
+        // Check if we're trying to overwrite start or end
+        if ((start_x == x_idx && start_y == y_idx) || (end_x == x_idx && end_y == y_idx))
+        {
+            return -1;
+        }
+        
         int newValue = -1;
 
         switch (*brush)

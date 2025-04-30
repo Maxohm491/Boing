@@ -79,11 +79,12 @@ class Editor : Application
     {
         auto textIn = readText("src/Scenes/scene" ~ to!string(scene_num) ~ ".json");
         auto root = parseJSON(textIn);
+        auto obj = root.object;
 
         int[GRID_Y][GRID_X] buf; // temporary
 
         size_t y = 0;
-        foreach (rowVal; root.array)
+        foreach (rowVal; obj["tiles"].array)
         {
             size_t x = 0;
             foreach (cell; rowVal.array)
@@ -91,6 +92,10 @@ class Editor : Application
             y++;
         }
 
+        grid.start_x = obj["start_x"].get!int; 
+        grid.start_y = obj["start_y"].get!int; 
+        grid.end_x = obj["end_x"].get!int; 
+        grid.end_y = obj["end_y"].get!int;
         grid.tiles = buf; // This is fine since the static array is stored by value
 
     }
@@ -107,9 +112,16 @@ class Editor : Application
             outer ~= JSONValue(inner);
         }
 
-        auto jsonRoot = JSONValue(outer);
+        JSONValue[string] obj;
+        obj["start_x"] = JSONValue(grid.start_x);
+        obj["start_y"] = JSONValue(grid.start_y);
+        obj["end_x"] = JSONValue(grid.end_x);
+        obj["end_y"] = JSONValue(grid.end_y);
+        obj["tiles"] = JSONValue(outer);
 
-        std.file.write("src/Scenes/scene" ~ to!string(scene_num) ~ ".json", jsonRoot.toString());
+        auto root = JSONValue(obj);
+
+        std.file.write("src/Scenes/scene" ~ to!string(scene_num) ~ ".json", root.toString());
     }
 
     void Render()
