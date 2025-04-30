@@ -14,17 +14,28 @@ class Grid : Button
     int* brush;
     int start_x, start_y = -1;
     int end_x, end_y = -1;
-    int[GRID_X][GRID_Y] tiles;
+    Tilemap mTilemap;
+    int[GRID_Y][GRID_X] tiles;
     SDL_Renderer* mRendererRef;
 
-    this(SDL_Renderer* r, int x)
+    this(SDL_Renderer* r, int x, Tilemap tilemap, int* brush)
     {
         mRendererRef = r;
         this.x = x;
+        this.mTilemap = tilemap;
+        this.brush = brush;
         this.square_size = (SCREEN_X - x) / GRID_X;
         onClick = &Clicked;
         onDragOver = &Clicked;
         rect = SDL_Rect(x, 0, SCREEN_X - x, square_size * GRID_Y);
+
+        foreach (i; 0 .. GRID_Y)
+        {
+            foreach (j; 0 .. GRID_X)
+            {
+                tiles[j][i] = 16;
+            }
+        }
     }
 
     void Clicked(SDL_Point point)
@@ -37,14 +48,32 @@ class Grid : Button
         x_idx = clamp(x_idx, 0, GRID_X - 1);
         y_idx = clamp(y_idx, 0, GRID_Y - 1);
 
-        newTile = brushToIndex(x_idx, y_idx);
+        int newTile = BrushToIndex(x_idx, y_idx);
         if(newTile > -1) // If failure just do nothin
         {
             tiles[x_idx][y_idx] = newTile;
         }
     }
 
-    int brushToIndex(int x_idx, int y_idx) // 0 background, 1 platform, 2 spike, 3 arrow, 4 start, 5 end
+    void RecalculateTile(int x_idx, int y_idx) {
+        // Make sure we're not checking off the edge
+        if(x_idx < 0 || x_idx >= GRID_X || y_idx < 0 || y_idx >= GRID_Y) return;
+         
+        // binary fancy
+        int value = 0;
+        if (y_idx == 0 || tiles[x_idx][y_idx - 1] <= 15)
+            value += 1;
+        if (y_idx == GRID_Y - 1 || tiles[x_idx][y_idx + 1] <= 15)
+            value += 8;
+        if (x_idx == 0 || tiles[x_idx - 1][y_idx] <= 15)
+            value += 2;
+        if (y_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15)
+            value += 4;
+        
+        tiles[x_idx][y_idx] = value;
+    }
+
+    int BrushToIndex(int x_idx, int y_idx) // 0 background, 1 platform, 2 spike, 3 arrow, 4 start, 5 end
     {
         switch (*brush)
         {
@@ -52,16 +81,24 @@ class Grid : Button
             return 16;
         case 1:
             // DO binary fancy count around
-            int idx = 0;
-            if (y_idx == 0 || tiles[x_idx][y_idx - 1] <= 15)
-                idx += 1;
-            if (y_idx == GRID_Y - 1 || tiles[x_idx][y_idx + 1] <= 15)
-                idx += 8;
-            if (x_idx == 0 || tiles[x_idx - 1][y_idx] <= 15)
-                idx += 2;
-            if (y_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15)
-                idx += 4;
-            return idx;
+            int value = 0;
+            if (y_idx == 0 || tiles[x_idx][y_idx - 1] <= 15) {
+                RecalculateTile(x_idx, y_idx - 1);
+                value += 1;
+            }
+            if (y_idx == GRID_Y - 1 || tiles[x_idx][y_idx + 1] <= 15) {
+                RecalculateTile(x_idx, y_idx + 1);
+                value += 8;
+            }
+            if (x_idx == 0 || tiles[x_idx - 1][y_idx] <= 15) {
+                RecalculateTile(x_idx - 1, y_idx);
+                value += 2;
+            }
+            if (y_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15) {
+                RecalculateTile(x_idx + 1, y_idx);
+                value += 4;
+            }
+            return value;
         case 2:
             // If on bottom of level or block below, rightsideup spike. else upsidedown
             if (y_idx == GRID_Y - 1)
@@ -105,10 +142,14 @@ class Grid : Button
             // Clear old start/end so only one per level
             if (hasStartAndEnd())
                 tiles[start_x][start_y] = 16;
+            start_x = x_idx;
+            start_y = y_idx;
             return 19;
         case 5:
             if (hasStartAndEnd())
                 tiles[start_x][start_y] = 16;
+            end_x = x_idx;
+            end_y = y_idx;
             return 20;
         default:
             assert(0, "invalid brush number");
@@ -123,14 +164,14 @@ class Grid : Button
     override void Render()
     {
         SDL_Rect square = SDL_Rect(x, 0, square_size, square_size);
-        foreach (i; 0 .. GRID_X)
+        foreach (i; 0 .. GRID_Y)
         {
-            foreach (j; 0 .. GRID_Y)
+            foreach (j; 0 .. GRID_X)
             {
-                mTilemap.RenderTile(index, &square);
+                mTilemap.RenderTile(tiles[j][i], &square);
                 square.x += square_size;
             }
-            square.x = 0;
+            square.x = x;
             square.y += square_size;
         }
     }

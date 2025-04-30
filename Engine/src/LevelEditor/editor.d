@@ -17,6 +17,7 @@ class Editor : Application
     Texture background;
     Tilemap tilemap;
     SDL_Rect backgroundLocation;
+    int brush = 1;
     Grid grid;
 
     immutable int START_X = 364; // start of grid
@@ -38,7 +39,7 @@ class Editor : Application
         tileTexture.LoadTexture("assets/images/tilemap.bmp", mRendererRef);
         tilemap = new Tilemap("assets/images/tilemap.json", mRendererRef, tileTexture);
 
-        grid = new Grid(mRendererRef, START_X);
+        grid = new Grid(mRendererRef, START_X, tilemap, &brush);
         ui.AddButton(grid);
 
         // Make buttons manually
