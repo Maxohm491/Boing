@@ -117,7 +117,8 @@ class Grid : Button
             newValue = 16;
             break;
         case 1:
-            return 0;
+            newValue =  0;
+            break;
         case 2:
             // If on bottom of level or block below, rightsideup spike. else upsidedown
             if (y_idx == GRID_Y - 1)
@@ -186,12 +187,12 @@ class Grid : Button
         }
 
         // Check if start or end got overwritten
-        if (start_x == x_idx && start_y == y_idx && *brush < 4)
+        if (start_x == x_idx && start_y == y_idx && *brush < 4 && newValue > -1)
         {
             start_x = -1;
             start_y = -1;
         }
-        if (end_x == x_idx && end_y == y_idx && *brush < 4)
+        if (end_x == x_idx && end_y == y_idx && *brush < 4 && newValue > -1)
         {
             end_x = -1;
             end_y = -1;
