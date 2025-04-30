@@ -15,7 +15,11 @@ class Editor : Application
     SDL_Renderer* mRendererRef;
     UserInterface ui;
     Texture background;
+    Tilemap tilemap;
     SDL_Rect backgroundLocation;
+    Grid grid;
+
+    immutable int START_X = 364; // start of grid
     bool running = false;
     bool clicked = false;
 
@@ -26,8 +30,28 @@ class Editor : Application
         ui = new UserInterface();
 
         background = new Texture();
-        background.LoadTexture("assets/background.bmp", mRendererRef);
+        background.LoadTexture("assets/images/editor_background.bmp", mRendererRef);
         backgroundLocation = SDL_Rect(0, 0, SCREEN_X, SCREEN_Y);
+
+        // Load tilemap
+        Texture tileTexture = new Texture();
+        tileTexture.LoadTexture("assets/images/tilemap.bmp", mRendererRef);
+        tilemap = new Tilemap("assets/images/tilemap.json", mRendererRef, tileTexture);
+
+        grid = new Grid(mRendererRef, START_X);
+        ui.AddButton(grid);
+
+        // Make buttons manually
+    }
+
+    void SwitchSceneClicked()
+    {
+
+    }
+
+    void SaveAndPlayClicked()
+    {
+
     }
 
     void Render()

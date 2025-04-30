@@ -73,7 +73,7 @@ class GameApplication : Application
     override void Start()
     {
         running = true;
-        Run();
+        // Run();
     }
 
     override void Stop()
