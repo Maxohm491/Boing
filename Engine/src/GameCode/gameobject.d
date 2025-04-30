@@ -149,4 +149,3 @@ GameObject GameObjectFactory(T...)(string name)
 // Example of an alias to make our GameObjectFactory a bit more clean.
 alias MakeSprite = GameObjectFactory!(ComponentType
 		.TRANSFORM, ComponentType.TEXTURE, ComponentType.COLLIDER, ComponentType.SPRITE);
-alias MakeBoundingBox = GameObjectFactory!(ComponentType.COLLIDER, ComponentType.TRANSFORM);

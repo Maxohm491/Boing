@@ -29,7 +29,6 @@ class Editor : Application
 
     immutable int START_X = 364; /// The x-coord of the start of grid
     bool running = false; /// Whether the editor is currently running
-    bool clicked = false;
 
     this(SDL_Renderer* r)
     {
@@ -38,13 +37,13 @@ class Editor : Application
         ui = new UserInterface();
 
         background = new Texture();
-        background.LoadTexture("assets/images/editor_background.bmp", mRendererRef);
+        background.LoadTexture("./assets/images/editor_background.bmp", mRendererRef);
         backgroundLocation = SDL_Rect(0, 0, SCREEN_X, SCREEN_Y);
 
         // Load tilemap
         Texture tileTexture = new Texture();
-        tileTexture.LoadTexture("assets/images/tilemap.bmp", mRendererRef);
-        tilemap = new Tilemap("assets/images/tilemap.json", mRendererRef, tileTexture);
+        tileTexture.LoadTexture("./assets/images/tilemap.bmp", mRendererRef);
+        tilemap = new Tilemap("./assets/images/tilemap.json", mRendererRef, tileTexture);
 
         grid = new Grid(mRendererRef, START_X, tilemap, &brush);
         ui.AddButton(grid);
@@ -61,6 +60,18 @@ class Editor : Application
         ui.AddButton(new SceneButton(1, mRendererRef, &scene, &SwitchScene, SDL_Rect(669, 734, 75, 84)));
         ui.AddButton(new SceneButton(2, mRendererRef, &scene, &SwitchScene, SDL_Rect(781, 734, 75, 84)));
         ui.AddButton(new SceneButton(3, mRendererRef, &scene, &SwitchScene, SDL_Rect(894, 734, 75, 84)));
+
+        // Make play button
+        Button button = new Button();
+        button.onClick = &PlayClicked;
+        button.rect = SDL_Rect(669, 837, 270, 84);
+        ui.AddButton(button);
+    }
+
+    void PlayClicked(SDL_Point _)
+    {
+        SaveCurrentScene(scene);
+        switchAppCallback();
     }
 
     void SwitchScene(int newScene)
@@ -70,31 +81,27 @@ class Editor : Application
         LoadScene(scene);
     }
 
-    void SaveAndPlayClicked()
-    {
-
-    }
-
+    /// Load a scene to the correct scene number file
     void LoadScene(int scene_num)
     {
-        auto textIn = readText("src/Scenes/scene" ~ to!string(scene_num) ~ ".json");
+        auto textIn = readText("./assets/scenes/scene" ~ to!string(scene_num) ~ ".json");
         auto root = parseJSON(textIn);
         auto obj = root.object;
 
-        int[GRID_Y][GRID_X] buf; // temporary
+        int[GRID_Y][GRID_X] buf;
 
         size_t y = 0;
         foreach (rowVal; obj["tiles"].array)
         {
             size_t x = 0;
             foreach (cell; rowVal.array)
-                buf[y][x++] = cell.get!int; // or `integer` accessor
+                buf[y][x++] = cell.get!int;
             y++;
         }
 
-        grid.start_x = obj["start_x"].get!int; 
-        grid.start_y = obj["start_y"].get!int; 
-        grid.end_x = obj["end_x"].get!int; 
+        grid.start_x = obj["start_x"].get!int;
+        grid.start_y = obj["start_y"].get!int;
+        grid.end_x = obj["end_x"].get!int;
         grid.end_y = obj["end_y"].get!int;
         grid.tiles = buf; // This is fine since the static array is stored by value
 
@@ -121,7 +128,7 @@ class Editor : Application
 
         auto root = JSONValue(obj);
 
-        std.file.write("src/Scenes/scene" ~ to!string(scene_num) ~ ".json", root.toString());
+        std.file.write("./assets/scenes/scene" ~ to!string(scene_num) ~ ".json", root.toString());
     }
 
     void Render()
@@ -141,7 +148,7 @@ class Editor : Application
         {
             // Detect quits
             if (event.type == SDL_QUIT)
-                running = false;
+                quitCallback();
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 mouseX = event.button.x;
@@ -151,7 +158,7 @@ class Editor : Application
                 if (event.button.state == SDL_PRESSED)
                 {
                     const clickPoint = SDL_Point(mouseX, mouseY);
-                    ui.CheckClick(&clickPoint, false); // if not clicked then it wasn't clicked last frame and was just pressed
+                    ui.CheckClick(&clickPoint, true); // if not clicked then it wasn't clicked last frame and was just pressed
                 }
             }
         }
@@ -163,28 +170,22 @@ class Editor : Application
         if (mask == SDL_BUTTON_LEFT || mask == SDL_BUTTON_RIGHT)
         {
             const clickPoint = SDL_Point(mouseX, mouseY);
-            ui.CheckClick(&clickPoint, !clicked); // if not clicked then it wasn't clicked last frame and was just pressed
+            ui.CheckClick(&clickPoint, false); // if not clicked then it wasn't clicked last frame and was just pressed
         }
-        clicked = mask == SDL_BUTTON_LEFT || mask == SDL_BUTTON_RIGHT;
     }
 
-    void Run()
-    {
-        while (running)
-        {
-            Render();
-            Input();
-        }
+    override void Tick() {
+        Render();
+        Input();
     }
 
     override void Start()
     {
-        running = true;
-        Run();
+        LoadScene(scene);
     }
 
     override void Stop()
     {
-        running = false;
+        SaveCurrentScene(scene);
     }
 }

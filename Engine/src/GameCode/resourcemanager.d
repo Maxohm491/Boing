@@ -26,7 +26,7 @@ struct ResourceManager
         else
         {
             SDL_Surface* surface = SDL_LoadBMP(filename.toStringz);
-            SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface.format, 0, 0, 0)); // black is clear
+            SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface.format, 0, 0, 255)); // blue is clear
             SDL_Texture* texture = SDL_CreateTextureFromSurface(r, surface);
             SDL_FreeSurface(surface);
             mImageResourceMap[filename] = texture;

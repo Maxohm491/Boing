@@ -5,3 +5,5 @@ immutable int SCREEN_Y = 960; // Pixels
 
 immutable int GRID_X = 16; // Number of grid squares per level
 immutable int GRID_Y = 12;
+
+immutable int TILE_SIZE = SCREEN_X / GRID_X;

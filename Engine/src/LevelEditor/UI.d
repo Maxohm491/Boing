@@ -1,20 +1,21 @@
 module LevelEditor.UI;
 
 import bindbc.sdl;
+import std.stdio;
 
 // Makin a custom ui interface cause I don't feel like figuring out the libraries
 
-// Mostly for tracking where each button is
-abstract class Button
+/// A button object. Can be inherited from; make sure to set onClick.
+class Button
 {
     SDL_Rect rect;
     void delegate(SDL_Point) onClick;
     void delegate(SDL_Point) onDragOver;
 
-    void Render();
+    void Render() {}
 }
 
-// Will work by storing an array of buttons and just seeing which is clicked
+/// Will work by storing an array of buttons and just seeing which is clicked
 class UserInterface
 {
     Button[] mButtons;
@@ -32,7 +33,7 @@ class UserInterface
             {
                 if (justPressed)
                     button.onClick(*point);
-                else
+                else if (button.onDragOver !is null)
                     button.onDragOver(*point);
                 return;
             }

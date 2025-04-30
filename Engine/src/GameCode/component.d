@@ -265,7 +265,6 @@ class TransformComponent : IComponent
 	}
 
 	// Translate
-	// Also updates internal rectangle
 	void Translate(float x, float y)
 	{
 		this.x += x;
@@ -289,5 +288,5 @@ class TransformComponent : IComponent
 		return rotation;
 	}
 
-	float x, y, rotation = 0; 
+	float x = 0, y = 0, rotation = 0; 
 }

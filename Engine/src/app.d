@@ -11,7 +11,9 @@ import constants;
 abstract class Application
 {
     void delegate() switchAppCallback;
+    void delegate() quitCallback;
 
+    void Tick();
     void Start();
     void Stop();
 }
@@ -26,6 +28,7 @@ class MainApplication
     GameApplication game = null;
 
     bool gameRunning = true; // If this is false, then editor is running
+    bool active = true;
 
     this()
     {
@@ -39,6 +42,8 @@ class MainApplication
         game = new GameApplication(mRenderer);
         editor.switchAppCallback = &SwitchRunningApp;
         game.switchAppCallback = &SwitchRunningApp;
+        editor.quitCallback = &Quit;
+        game.quitCallback = &Quit;
     }
 
     ~this()
@@ -49,7 +54,12 @@ class MainApplication
 
     void Run()
     {
-        game.Start();
+        while(active) {
+            if(gameRunning)
+                game.Tick();
+            else
+                editor.Tick();
+        }
     }
 
     void SwitchRunningApp()
@@ -64,8 +74,12 @@ class MainApplication
             editor.Stop();
             game.Start();
         }
-
         gameRunning = !gameRunning;
+    }
+
+    void Quit()
+    {
+        active = false;
     }
 }
 
@@ -73,8 +87,9 @@ class MainApplication
 void main()
 {
     MainApplication mainApp = new MainApplication();
-    mainApp.Run();
-    
     // TEMPORARILY just run editor by defauly
     mainApp.SwitchRunningApp();
+
+    mainApp.Run();
+    
 }

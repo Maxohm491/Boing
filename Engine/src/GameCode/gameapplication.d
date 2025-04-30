@@ -3,18 +3,19 @@ import bindbc.sdl;
 import GameCode.scene;
 import engine;
 import std.algorithm;
+import std.stdio;
 
 class GameApplication : Application
 {
     SDL_Renderer* mRendererRef;
-    bool running = false;
 
     Scene[] mScenes;
-    int mCurrScene;
+    int mCurrScene = 0;
 
     this(SDL_Renderer* r)
     {
         mRendererRef = r;
+		mScenes ~= new Scene(r);
     }
 
     void Input()
@@ -24,7 +25,7 @@ class GameApplication : Application
 		{
 			// Either quit or let the scene handle it
 			if (event.type == SDL_QUIT)
-				running = false;
+				quitCallback();
 			else
 				mScenes[mCurrScene].Input(event);
 		}
@@ -57,27 +58,20 @@ class GameApplication : Application
         // mScenes ~= new Scene();
     }
 
-	void Run()
-	{
-		while (running)
-		{
-			// Cap frames
-			int start = SDL_GetTicks();
-			AdvanceFrame();
+	override void Tick() {
+		int start = SDL_GetTicks();
+		AdvanceFrame();
 
-			int delay = start + 16 - int(SDL_GetTicks());
-			SDL_Delay(max(delay, 0));
-		}
+		int delay = start + 16 - int(SDL_GetTicks());
+		SDL_Delay(max(delay, 0)); // Make sure no overflows
 	}
 
     override void Start()
     {
-        running = true;
-        // Run();
+        
     }
 
     override void Stop()
     {
-        running = false;
     }
 }
