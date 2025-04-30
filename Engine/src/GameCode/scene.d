@@ -20,22 +20,17 @@ struct GameState
 class Scene
 {
     GameObject[] gameObjects; // Don't use a scene tree bc that's complicated
-    GameObject[] toAdd; // Wait until end of update to add bullets
     GameState mGameState;
     SDL_Renderer* mRendererRef;
     bool mActive = true;
-    bool menu;
 
     // Create scene 
-    this(SDL_Renderer* r, bool isMenu)
+    this(SDL_Renderer* r)
     {
         mRendererRef = r;
-        this.menu = isMenu;
-
-        LoadScene();
     }
 
-    void LoadScene()
+    void LoadSceneFromJson(string filename)
     {
     }
 

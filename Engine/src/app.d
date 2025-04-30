@@ -76,5 +76,5 @@ void main()
     mainApp.Run();
     
     // TEMPORARILY just run editor by defauly
-    mainApp.SwitchRunningApp();
+    // mainApp.SwitchRunningApp();
 }

@@ -8,7 +8,7 @@
 	},
 	"description": "A minimal D application.",
 	"license": "proprietary",
-	"name": "prog_sdl",
+	"name": "compiled_prog",
 	"versions": [
 		"SDL_Mixer"
 	]
