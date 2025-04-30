@@ -49,16 +49,18 @@ class Grid : Button
         y_idx = clamp(y_idx, 0, GRID_Y - 1);
 
         int newTile = BrushToIndex(x_idx, y_idx);
-        if(newTile > -1) // If failure just do nothin
+        if (newTile > -1) // If failure just do nothin
         {
             tiles[x_idx][y_idx] = newTile;
         }
     }
 
-    void RecalculateTile(int x_idx, int y_idx) {
+    void RecalculateTile(int x_idx, int y_idx)
+    {
         // Make sure we're not checking off the edge
-        if(x_idx < 0 || x_idx >= GRID_X || y_idx < 0 || y_idx >= GRID_Y) return;
-         
+        if (x_idx < 0 || x_idx >= GRID_X || y_idx < 0 || y_idx >= GRID_Y)
+            return;
+
         // binary fancy
         int value = 0;
         if (y_idx == 0 || tiles[x_idx][y_idx - 1] <= 15)
@@ -67,9 +69,9 @@ class Grid : Button
             value += 8;
         if (x_idx == 0 || tiles[x_idx - 1][y_idx] <= 15)
             value += 2;
-        if (y_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15)
+        if (x_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15)
             value += 4;
-        
+
         tiles[x_idx][y_idx] = value;
     }
 
@@ -82,19 +84,23 @@ class Grid : Button
         case 1:
             // DO binary fancy count around
             int value = 0;
-            if (y_idx == 0 || tiles[x_idx][y_idx - 1] <= 15) {
+            if (y_idx == 0 || tiles[x_idx][y_idx - 1] <= 15)
+            {
                 RecalculateTile(x_idx, y_idx - 1);
                 value += 1;
             }
-            if (y_idx == GRID_Y - 1 || tiles[x_idx][y_idx + 1] <= 15) {
+            if (y_idx == GRID_Y - 1 || tiles[x_idx][y_idx + 1] <= 15)
+            {
                 RecalculateTile(x_idx, y_idx + 1);
                 value += 8;
             }
-            if (x_idx == 0 || tiles[x_idx - 1][y_idx] <= 15) {
+            if (x_idx == 0 || tiles[x_idx - 1][y_idx] <= 15)
+            {
                 RecalculateTile(x_idx - 1, y_idx);
                 value += 2;
             }
-            if (y_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15) {
+            if (x_idx == GRID_X - 1 || tiles[x_idx + 1][y_idx] <= 15)
+            {
                 RecalculateTile(x_idx + 1, y_idx);
                 value += 4;
             }
@@ -174,6 +180,18 @@ class Grid : Button
             square.x = x;
             square.y += square_size;
         }
+
+        // Draw grid itself
+        SDL_SetRenderDrawColor(mRendererRef, 150, 150, 150, SDL_ALPHA_OPAQUE);
+        foreach (i; 0 .. GRID_X + 1)
+        {
+            SDL_RenderDrawLine(mRendererRef, x + i * square_size, 0, x + i * square_size, GRID_Y * square_size);
+        }
+        foreach (i; 0 .. GRID_Y + 1)
+        {
+            SDL_RenderDrawLine(mRendererRef, x, i * square_size, x + GRID_X * square_size, i * square_size);
+        }
+        SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
     }
 }
 
@@ -220,43 +238,5 @@ class Grid : Button
 //         }
 
 //         mTilemap.RenderTile(mIndex, &rect);
-//     }
-// }
-
-// Grid square that has a tile
-// class GridSquare : Button
-// {
-//     int index; // an index into mTilemap
-//     Tilemap mTilemap;
-//     SDL_Renderer* mRendererRef;
-//     int* mCurrTileRef;
-
-//     this(Tilemap tilemap, SDL_Rect location, SDL_Renderer* r, int* currTileRef, bool* isBottomLayer)
-//     {
-//         rect = location;
-//         mCurrTileRef = currTileRef;
-//         mRendererRef = r;
-//         mTilemap = tilemap;
-//         onClick = &Clicked;
-//         onDragOver = &Clicked;
-//         mTopIndex = -1;
-//     }
-
-//     void Clicked()
-//     {
-//         if (*mBottomLayer)
-//             mBottomIndex = *mCurrTileRef;
-//         else
-//             mTopIndex = *mCurrTileRef;
-//     }
-
-//     override void Render()
-//     {
-//         mTilemap.RenderTile(index, &rect);
-
-//         // This could be just done with drawing lines in main but I like this
-//         SDL_SetRenderDrawColor(mRendererRef, 175, 175, 175, SDL_ALPHA_OPAQUE);
-//         SDL_RenderDrawRect(mRendererRef, &rect);
-//         SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
 //     }
 // }
