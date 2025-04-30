@@ -5,8 +5,9 @@ import engine;
 import bindbc.sdl;
 import std.stdio;
 import LevelEditor.UI;
-import LevelEditor.tiles;
+import LevelEditor.grid;
 import LevelEditor.tilemap;
+import LevelEditor.brushbutton;
 import constants;
 
 // This will be the level editor/tilemap editor
@@ -42,7 +43,13 @@ class Editor : Application
         grid = new Grid(mRendererRef, START_X, tilemap, &brush);
         ui.AddButton(grid);
 
-        // Make buttons manually
+        // Make brush buttons manually
+        ui.AddButton(new BrushButton(1, mRendererRef, &brush, SDL_Rect(20, 100, 290, 144)));
+        ui.AddButton(new BrushButton(2, mRendererRef, &brush, SDL_Rect(20, 256, 290, 144)));
+        ui.AddButton(new BrushButton(3, mRendererRef, &brush, SDL_Rect(20, 396, 290, 98)));
+        ui.AddButton(new BrushButton(4, mRendererRef, &brush, SDL_Rect(20, 494, 303, 144)));
+        ui.AddButton(new BrushButton(5, mRendererRef, &brush, SDL_Rect(20, 636, 303, 144)));
+        ui.AddButton(new BrushButton(0, mRendererRef, &brush, SDL_Rect(20, 780, 290, 128)));
     }
 
     void SwitchSceneClicked()

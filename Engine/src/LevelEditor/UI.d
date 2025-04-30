@@ -14,47 +14,6 @@ abstract class Button
     void Render();
 }
 
-// class LevelButton : Button
-// {
-//     void function(bool) globalLevelSetter; // bad dependent code
-//     bool isBottomButton;
-//     bool* mIsBottomOn;
-
-//     SDL_Renderer* mRendererRef;
-//     SDL_Rect background1, background2;
-
-//     this(void function(bool) setter, bool isBottomButton, SDL_Rect location, SDL_Renderer* r, bool* isBottomOn)
-//     {
-//         rect = location;
-//         // Two more backgrounds for thicker border
-//         background1 = SDL_Rect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2);
-//         background2 = SDL_Rect(rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4);
-//         globalLevelSetter = setter;
-//         this.isBottomButton = isBottomButton;
-//         mRendererRef = r;
-//         mIsBottomOn = isBottomOn;
-//         onClick = &Click;
-//         onDragOver = &Click;
-//     }
-
-//     void Click()
-//     {
-//         globalLevelSetter(isBottomButton);
-//     }
-
-//     override void Render()
-//     {
-//         if (isBottomButton == *mIsBottomOn)
-//         {
-//             SDL_SetRenderDrawColor(mRendererRef, 255, 0, 0, SDL_ALPHA_OPAQUE);
-//             SDL_RenderDrawRect(mRendererRef, &rect);
-//             SDL_RenderDrawRect(mRendererRef, &background1);
-//             SDL_RenderDrawRect(mRendererRef, &background2);
-//             SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
-//         }
-//     }
-// }
-
 // Will work by storing an array of buttons and just seeing which is clicked
 class UserInterface
 {
