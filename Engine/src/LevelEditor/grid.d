@@ -54,7 +54,8 @@ class Grid : Button
             tiles[x_idx][y_idx] = newTile;
             // DO binary fancy count around
             int platValue = RecalculateSurroundings(x_idx, y_idx);
-            if(newTile <= 15) {
+            if (newTile <= 15)
+            {
                 tiles[x_idx][y_idx] = platValue;
             }
         }
@@ -108,77 +109,108 @@ class Grid : Button
 
     int BrushToIndex(int x_idx, int y_idx) // 0 background, 1 platform, 2 spike, 3 arrow, 4 start, 5 end
     {
-        if(start_x == x_idx && start_y == y_idx && *brush < 4) {
-            start_x = -1;
-            start_y = -1;
-        }
-        if(end_x == x_idx && end_y == y_idx && *brush < 4) {
-            end_x = -1;
-            end_y = -1;
-        }
+        int newValue = -1;
+
         switch (*brush)
         {
         case 0:
-            return 16;
+            newValue = 16;
+            break;
         case 1:
             return 0;
         case 2:
             // If on bottom of level or block below, rightsideup spike. else upsidedown
             if (y_idx == GRID_Y - 1)
             {
-                return 17;
+                newValue = 17;
+                break;
             }
             else if (tiles[x_idx][y_idx + 1] <= 15)
             {
-                return 17;
+                newValue = 17;
+                break;
             }
             else if (y_idx == 0)
             {
-                return 23;
+                newValue = 23;
+                break;
             }
             else if (tiles[x_idx][y_idx - 1] <= 15)
             {
-                return 23;
+                newValue = 23;
+                break;
             }
-            return -1; // else error
-
+            newValue = -1;
+            break;
         case 3:
             // If on left or right, flip accordingly
             if (x_idx == GRID_X - 1)
             {
-                return 18;
+                newValue = 18;
+                break;
             }
             else if (tiles[x_idx + 1][y_idx] <= 15)
             {
-                return 18;
+                newValue = 18;
+                break;
             }
             else if (x_idx == 0)
             {
-                return 26;
+                newValue = 26;
+                break;
             }
             else if (tiles[x_idx - 1][y_idx] <= 15)
             {
-                return 26;
+                newValue = 26;
+                break;
             }
-            return -1; // else error
+            newValue = -1;
+            break;
         case 4:
             // Clear old start/end so only one per level
             if (start_x > -1)
                 tiles[start_x][start_y] = 16;
             start_x = x_idx;
             start_y = y_idx;
-            return 19;
+            newValue = 19;
+            break;
         case 5:
             if (end_x > -1)
                 tiles[start_x][start_y] = 16;
             end_x = x_idx;
             end_y = y_idx;
-            return 20;
+            newValue = 20;
+            break;
         default:
             assert(0, "invalid brush number");
         }
-    }
 
+        // Check if start or end got overwritten
+        if (start_x == x_idx && start_y == y_idx && *brush < 4)
+        {
+            start_x = -1;
+            start_y = -1;
+        }
+        if (end_x == x_idx && end_y == y_idx && *brush < 4)
+        {
+            end_x = -1;
+            end_y = -1;
+        }
+
+        // Check if spike or arrow had its wall removed
+        if(newValue >= 16) { // if intangible
+            if(x_idx > 0 && (tiles[x_idx - 1][y_idx] == 18 || tiles[x_idx - 1][y_idx] == 26 )) // if arrow
+                tiles[x_idx - 1][y_idx] = 16; // set blank
+            if(x_idx < GRID_X - 1 && (tiles[x_idx + 1][y_idx] == 18 || tiles[x_idx + 1][y_idx] == 26 )) // if arrow
+                tiles[x_idx + 1][y_idx] = 16; // set blank
+            if(y_idx > 0 && (tiles[x_idx][y_idx - 1] == 17 || tiles[x_idx][y_idx - 1] == 23 )) // if spike
+                tiles[x_idx][y_idx - 1] = 16; // set blank
+            if(y_idx < GRID_Y - 1 && (tiles[x_idx][y_idx + 1] == 17 || tiles[x_idx][y_idx + 1] == 23 )) // if spike
+                tiles[x_idx][y_idx + 1] = 16; // set blank
+        }
+
+        return newValue;
+    }
 
     override void Render()
     {
