@@ -25,21 +25,25 @@ struct GameState
 class Scene
 {
     GameObject[] gameObjects; // Don't use a scene tree bc that's complicated
+    GameObject player;
     GameState mGameState;
     SDL_Renderer* mRendererRef;
+    SDL_Point mSpawnPoint;
     GameObject tilemap;
-    bool mActive = true;
+    void delegate() mOnComplete;
 
     // Create scene 
-    this(SDL_Renderer* r, int sceneIndex)
+    this(SDL_Renderer* r, int sceneIndex, void delegate() onComplete)
     {
         mRendererRef = r;
+        mOnComplete = onComplete;
         LoadSceneFromJson("./assets/scenes/scene" ~ to!string(sceneIndex) ~ ".json");
     }
 
-    GameObject MakePlayer(SDL_Point location)
+    GameObject MakePlayer()
     {
-        GameObject player = MakeSprite("player");
+        player = null;
+        player = MakeSprite("player");
         TransformComponent transform = cast(TransformComponent) player.GetComponent(
             ComponentType.TRANSFORM);
         TextureComponent texture = cast(TextureComponent) player.GetComponent(
@@ -48,8 +52,8 @@ class Scene
         ColliderComponent collider = cast(ColliderComponent) player.GetComponent(
             ComponentType.COLLIDER);
 
-        transform.x = location.x;
-        transform.y = location.y;
+        transform.x = mSpawnPoint.x;
+        transform.y = mSpawnPoint.y;
 
         texture.LoadTexture("./assets/images/character.bmp", mRendererRef);
         sprite.LoadMetaData("./assets/images/character.json");
@@ -67,18 +71,53 @@ class Scene
         player.AddComponent!(ComponentType.INPUT)(input);
 
         auto playScript = new Player(player);
+        playScript.mTilemap = cast(TilemapCollider) tilemap.GetComponent(ComponentType.TILEMAP_COLLIDER);
         player.AddComponent!(ComponentType.SCRIPT)(playScript);
 
         return player;
     }
 
+    GameObject MakeApple(SDL_Point location)
+    {
+        GameObject apple = MakeCollider("apple");
+        TransformComponent transform = cast(TransformComponent) apple.GetComponent(
+            ComponentType.TRANSFORM);
+        ColliderComponent collider = cast(ColliderComponent) apple.GetComponent(
+            ComponentType.COLLIDER);
+
+        transform.x = location.x;
+        transform.y = location.y;
+
+        collider.rect.w = TILE_SIZE;
+        collider.rect.h = TILE_SIZE; // be generous
+
+        return apple;
+    }
+
+    GameObject MakeSpike(SDL_Point location, bool up)
+    {
+        GameObject spike = MakeCollider("spike");
+        TransformComponent transform = cast(TransformComponent) spike.GetComponent(
+            ComponentType.TRANSFORM);
+        ColliderComponent collider = cast(ColliderComponent) spike.GetComponent(
+            ComponentType.COLLIDER);
+
+        transform.x = location.x;
+        transform.y = location.y;
+
+        collider.rect.w = TILE_SIZE;
+        collider.rect.h = TILE_SIZE / 2; // be generous
+        if(up) 
+        {
+            collider.offset.y = TILE_SIZE / 2;
+        }
+
+        return spike;
+    }
+
     /// Spawns player, end, spikes, arrows, and walls
     void LoadSceneFromJson(string filename)
     {
-        GameObject player;
-
-        tilemap = GameObjectFactory!(ComponentType.TEXTURE,
-            ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
 
         auto textIn = readText(filename);
         auto root = parseJSON(textIn);
@@ -95,24 +134,26 @@ class Scene
                 int value = cell.get!int;
                 if (value == 19)// start
                 {
-                    player = MakePlayer(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x)));
+                    mSpawnPoint = SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x));
                     value = 16;
                 } 
                 else if (value == 20) // end
                 {
                     value = 28; // apple
+                    AddGameObject(MakeApple(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x))));
                 }
+                else if (value == 17) // up spike
+                    AddGameObject(MakeSpike(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x)), true));
+                else if (value == 23) // down spike
+                    AddGameObject(MakeSpike(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x)), false));
 
                 buf[y][x++] = value;
             }
             y++;
         }
 
-        // Deal with start and end
-        // grid.start_x = obj["start_x"].get!int;
-        // grid.start_y = obj["start_y"].get!int;
-        // grid.end_x = obj["end_x"].get!int;
-        // grid.end_y = obj["end_y"].get!int;
+        tilemap = GameObjectFactory!(ComponentType.TEXTURE,
+            ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
 
         TextureComponent texture = cast(TextureComponent) tilemap.GetComponent(
             ComponentType.TEXTURE);
@@ -129,7 +170,7 @@ class Scene
         collider.tiles = buf;
         AddGameObject(tilemap);
 
-        AddGameObject(player);
+        AddGameObject(MakePlayer());
     }
 
     void Input(SDL_Event e)
@@ -148,23 +189,43 @@ class Scene
             obj.Update();
         }
 
-        // Update Collisios
-        foreach (ref objComponent; gameObjects[1 .. $])
-        {
-            auto collider = cast(ColliderComponent) objComponent.GetComponent(
+        // Update collisions of player
+        auto collider = cast(ColliderComponent) player.GetComponent(
                 ComponentType.COLLIDER);
 
-            if (collider !is null)
-            {
-                collider.CheckCollisions(gameObjects[1 .. $]);
-            }
-        }
+        if (collider !is null)
+            collider.CheckCollisions(gameObjects);
+
+        // foreach (ref objComponent; gameObjects[1 .. $])
+        // {
+        //     auto collider = cast(ColliderComponent) objComponent.GetComponent(
+        //         ComponentType.COLLIDER);
+
+        //     if (collider !is null)
+        //     {
+        //         collider.CheckCollisions(gameObjects[1 .. $]);
+        //     }
+        // }
 
         // Check deaths
+        bool respawn = false;
         for (auto i = gameObjects.length; i > 0; i -= 1)
         {
             if (!gameObjects[i - 1].alive)
+            {
+                // if(gameObjects[i - 1].GetName() == "player")
+                //     AddGameObject(MakePlayer()); // respawn player
+                // if(gameObjects[i - 1].GetName() == "apple")
+                //     mOnComplete();
+                respawn = respawn || gameObjects[i - 1].GetName() == "player";
                 gameObjects = gameObjects.remove(i - 1);
+            }
+        }
+
+        if(respawn) 
+        {
+            writeln("spawing");
+            AddGameObject(MakePlayer());
         }
     }
 

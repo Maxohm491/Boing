@@ -7,18 +7,20 @@ import std.stdio;
 
 class GameApplication : Application
 {
-    SDL_Renderer* mRendererRef;
+	SDL_Renderer* mRendererRef;
 
-    Scene[] mScenes;
-    int mCurrScene = 0;
+	Scene[] mScenes;
+	int mCurrScene = 0;
 
-    this(SDL_Renderer* r)
-    {
-        mRendererRef = r;
-		mScenes ~= new Scene(r, 1);
-    }
+	this(SDL_Renderer* r)
+	{
+		mRendererRef = r;
+		mScenes ~= new Scene(r, 1, &AdvanceScene);
+		mScenes ~= new Scene(r, 2, &AdvanceScene);
+		mScenes ~= new Scene(r, 3, &AdvanceScene);
+	}
 
-    void Input()
+	void Input()
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -53,12 +55,27 @@ class GameApplication : Application
 		Render();
 	}
 
-    void LoadScenesFromJsons() {
-        // TEMPORARY
-        // mScenes ~= new Scene();
-    }
+	void AdvanceScene()
+	{
+		mCurrScene++;
+		if (mCurrScene > 2)
+		{
+			//DONE
+			quitCallback();
+		}
+	}
 
-	override void Tick() {
+	void LoadScenesFromJsons()
+	{
+		mScenes = null; 
+
+		mScenes ~= new Scene(mRendererRef, 1, &AdvanceScene);
+		mScenes ~= new Scene(mRendererRef, 2, &AdvanceScene);
+		mScenes ~= new Scene(mRendererRef, 3, &AdvanceScene);
+	}
+
+	override void Tick()
+	{
 		int start = SDL_GetTicks();
 		AdvanceFrame();
 
@@ -66,12 +83,12 @@ class GameApplication : Application
 		SDL_Delay(max(delay, 0)); // Make sure no overflows
 	}
 
-    override void Start()
-    {
-		mScenes[0] = new Scene(mRendererRef, 1);
-    }
+	override void Start()
+	{
+		LoadScenesFromJsons();
+	}
 
-    override void Stop()
-    {
-    }
+	override void Stop()
+	{
+	}
 }

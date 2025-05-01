@@ -38,14 +38,12 @@ class Player : ScriptComponent
         mInputRef = cast(InputComponent) mOwner.GetComponent(ComponentType.INPUT);
         mSpriteRef = cast(SpriteComponent) mOwner.GetComponent(ComponentType.SPRITE);
 
-        mTilemap = cast(TilemapCollider) GameObject.GetGameObject("tilemap")
-            .GetComponent(ComponentType.TILEMAP_COLLIDER);
-
         mSpriteRef.SetAnimation("idle");
     }
 
     override void Update()
     {
+        HandleSpikes();
         vel_x = runSpeed * mInputRef.GetDir();
         if (grounded)
         {
@@ -69,6 +67,16 @@ class Player : ScriptComponent
         MoveAndHandleWallCollisions();
     }
 
+    void HandleSpikes() 
+    {
+        auto collidedWith = mColliderRef.GetCollisions();
+        foreach(obj; collidedWith)
+        {
+            if(obj == "spike")
+                mOwner.alive = false;
+        }
+    }
+
     void MoveAndHandleWallCollisions()
     {
         // Calculate new pos, decide if it would go into a new rect, and adjust accordingly
@@ -79,11 +87,6 @@ class Player : ScriptComponent
 
         auto colls = mTilemap.GetWallCollisions(&newColliderPos);
         
-        // Check boundaries
-        // SDL_Rect boundsOverlap;
-        // SDL_Rect left = SDL_Rect(-TILE_SIZE, 0, );
-        // if(SDL_IntersectRect())
-
         if (colls.length == 0) // 0 — clear, just move
         {
             mTransformRef.Translate(vel_x, -vel_y);

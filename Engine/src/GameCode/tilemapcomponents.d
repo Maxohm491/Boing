@@ -92,7 +92,10 @@ class TilemapCollider : IComponent
             foreach (j; 0 .. GRID_X)
             {
                 if (tiles[j][i] <= 15 && SDL_HasIntersection(rect, &square)) // If colliding with wall
+                {
                     toReturn ~= square;
+                }
+
                 square.x += TILE_SIZE;
             }
             square.x = 0;

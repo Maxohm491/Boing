@@ -63,9 +63,9 @@ class ColliderComponent : IComponent
 	{
 		// Round posittion to a pixel
 		// 8 pixels/tile
-		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f; 
-		rect.x = cast(int) (round(mTransformRef.x / pixelWidth) * pixelWidth) + offset.x;
-		rect.y = cast(int) (round(mTransformRef.y / pixelWidth) * pixelWidth) + offset.y;
+		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f;
+		rect.x = cast(int)(round(mTransformRef.x / pixelWidth) * pixelWidth) + offset.x;
+		rect.y = cast(int)(round(mTransformRef.y / pixelWidth) * pixelWidth) + offset.y;
 	}
 
 	// Recursively check all collidables
@@ -179,25 +179,35 @@ class SpriteComponent : IComponent
 
 	void Render()
 	{
-		Frame frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
-		mCurrentFrameDuration += 1;
-
-		if (mCurrentFrameDuration > frame.mDuration)
-		{
-			mCurrentFrameDuration = 0;
-			mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mFrameNumbers[mCurrentAnimationName]
-				.length;
-			frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
-		}
-
 		// Round posittion to a pixel
 		// 8 pixels/tile
-		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f; 
-		mRect.x = cast(int) (round(mTransformRef.x / pixelWidth) * pixelWidth);
-		mRect.y = cast(int) (round(mTransformRef.y / pixelWidth) * pixelWidth);
+		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f;
+		mRect.x = cast(int)(round(mTransformRef.x / pixelWidth) * pixelWidth);
+		mRect.y = cast(int)(round(mTransformRef.y / pixelWidth) * pixelWidth);
 
-		SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(mRect), mTransformRef.GetAngle() * (180.0 / PI), null, SDL_RendererFlip
-				.SDL_FLIP_NONE);
+		if (mFrames.length > 0)
+		{
+			Frame frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
+			mCurrentFrameDuration += 1;
+
+			if (mCurrentFrameDuration > frame.mDuration)
+			{
+				mCurrentFrameDuration = 0;
+				mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mFrameNumbers[mCurrentAnimationName]
+					.length;
+				frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
+			}
+
+			SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(mRect), mTransformRef.GetAngle() * (
+					180.0 / PI), null, SDL_RendererFlip
+					.SDL_FLIP_NONE);
+		}
+		else
+		{
+			SDL_RenderCopyEx(mRendererRef, mTextureRef, null, &(mRect), mTransformRef.GetAngle() * (
+					180.0 / PI), null, SDL_RendererFlip
+					.SDL_FLIP_NONE);
+		}
 	}
 }
 
@@ -287,5 +297,5 @@ class TransformComponent : IComponent
 		return rotation;
 	}
 
-	float x = 0, y = 0, rotation = 0; 
+	float x = 0, y = 0, rotation = 0;
 }
