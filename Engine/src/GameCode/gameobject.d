@@ -165,3 +165,5 @@ alias MakeSprite = GameObjectFactory!(ComponentType
 		.TRANSFORM, ComponentType.TEXTURE, ComponentType.COLLIDER, ComponentType.SPRITE);
 alias MakeCollider = GameObjectFactory!(ComponentType
 		.TRANSFORM, ComponentType.COLLIDER);
+alias MakeTransform = GameObjectFactory!(ComponentType
+		.TRANSFORM);

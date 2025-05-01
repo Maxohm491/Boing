@@ -120,6 +120,7 @@ class SpriteComponent : IComponent
 	size_t mCurrentFrameIndex = 0; // Index into mFrameNumbers[mCurrentAnimationName]
 
 	SDL_Rect mRect;
+	bool flipped = false;
 
 	/// Hold a copy of the texture that is referenced
 	this(GameObject owner)
@@ -199,13 +200,16 @@ class SpriteComponent : IComponent
 			}
 
 			SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(mRect), mTransformRef.GetAngle() * (
-					180.0 / PI), null, SDL_RendererFlip
+					180.0 / PI), null, 
+					flipped ? SDL_RendererFlip.SDL_FLIP_HORIZONTAL : 
+					SDL_RendererFlip
 					.SDL_FLIP_NONE);
 		}
 		else
 		{
 			SDL_RenderCopyEx(mRendererRef, mTextureRef, null, &(mRect), mTransformRef.GetAngle() * (
-					180.0 / PI), null, SDL_RendererFlip
+					180.0 / PI), null, flipped ? SDL_RendererFlip.SDL_FLIP_HORIZONTAL : 
+					SDL_RendererFlip
 					.SDL_FLIP_NONE);
 		}
 	}

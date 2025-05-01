@@ -26,7 +26,6 @@ class Player : ScriptComponent
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
     bool wasJumpPressed = false;
-    immutable float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f;
     bool grounded = false;
 
     this(GameObject owner)
@@ -45,6 +44,8 @@ class Player : ScriptComponent
     {
         HandleCollisions();
         vel_x = runSpeed * mInputRef.GetDir();
+        if(vel_x != 0) mSpriteRef.flipped = vel_x < 0;
+
         if (grounded)
         {
             if (grounded && mInputRef.upPressed)
@@ -72,7 +73,7 @@ class Player : ScriptComponent
         auto collidedWith = mColliderRef.GetCollisions();
         foreach(obj; collidedWith)
         {
-            if(obj == "spike")
+            if(obj == "spike" || obj == "arrow")
                 mOwner.alive = false;
             else if(obj.startsWith("apple"))
             {
@@ -85,8 +86,8 @@ class Player : ScriptComponent
     {
         // Calculate new pos, decide if it would go into a new rect, and adjust accordingly
         SDL_Rect newColliderPos = SDL_Rect(cast(int)(round(
-                (mTransformRef.x + vel_x) / pixelWidth) * pixelWidth) + mColliderRef.offset.x,
-            cast(int)(round((mTransformRef.y - vel_y) / pixelWidth) * pixelWidth) + mColliderRef.offset.y, mColliderRef
+                (mTransformRef.x + vel_x) / PIXEL_WIDTH) * PIXEL_WIDTH) + mColliderRef.offset.x,
+            cast(int)(round((mTransformRef.y - vel_y) / PIXEL_WIDTH) * PIXEL_WIDTH) + mColliderRef.offset.y, mColliderRef
                 .rect.w, mColliderRef.rect.h);
 
         auto colls = mTilemap.GetWallCollisions(&newColliderPos);
