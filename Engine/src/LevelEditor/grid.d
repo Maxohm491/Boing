@@ -7,7 +7,8 @@ import constants;
 import std.stdio;
 import std.algorithm.comparison;
 
-// The drawn tilemap
+/// Represents a grid of tiles in the level editor, used for placing and visualizing platform elements.
+/// Also supports start/end placement, spike/arrow autoplacement, and brush-driven editing.
 class Grid : Button
 {
     int x, square_size, num_y, num_x; // x is coord of start of gird
@@ -18,6 +19,7 @@ class Grid : Button
     int[GRID_Y][GRID_X] tiles;
     SDL_Renderer* mRendererRef;
 
+    /// Constructs a Grid UI element given renderer, x-offset, tilemap, and brush reference.
     this(SDL_Renderer* r, int x, Tilemap tilemap, int* brush)
     {
         mRendererRef = r;
@@ -29,6 +31,7 @@ class Grid : Button
         onDragOver = &Clicked;
         rect = SDL_Rect(x, 0, SCREEN_X - x, square_size * GRID_Y);
 
+        // Initialize with background tile (16)
         foreach (i; 0 .. GRID_Y)
         {
             foreach (j; 0 .. GRID_X)
@@ -37,7 +40,8 @@ class Grid : Button
             }
         }
     }
-
+    
+    /// Handles mouse clicks or drag events, updating tile values using current brush.
     void Clicked(SDL_Point point)
     {
         // Find which box was clicked and update index
@@ -60,7 +64,8 @@ class Grid : Button
             }
         }
     }
-
+    
+    /// Recalculates surrounding tile binary value for terrain-blending logic.
     void RecalculateTile(int x_idx, int y_idx)
     {
         // Make sure we're not checking off the edge
@@ -81,6 +86,7 @@ class Grid : Button
         tiles[x_idx][y_idx] = value;
     }
 
+    /// Recalculates surrounding tile binary value for terrain-blending logic.
     int RecalculateSurroundings(int x_idx, int y_idx) // return the binary representation of what was recalculated
     {
         int value = 0;
@@ -107,6 +113,9 @@ class Grid : Button
         return value;
     }
 
+    /// Converts brush type and context into a tile index for the grid.
+    ///
+    /// Returns: Tile ID to place, or -1 if placement is invalid (e.g., overwriting start/end).
     int BrushToIndex(int x_idx, int y_idx) // 0 background, 1 platform, 2 spike, 3 arrow, 4 start, 5 end
     {
         // Check if we're trying to overwrite start or end
@@ -119,13 +128,13 @@ class Grid : Button
 
         switch (*brush)
         {
-        case 0:
+        case 0: // background (empty)
             newValue = 16;
             break;
-        case 1:
+        case 1: // platform base
             newValue =  0;
             break;
-        case 2:
+        case 2: // spike (top or bottom)
             // If on bottom of level or block below, rightsideup spike. else upsidedown
             if (y_idx == GRID_Y - 1)
             {
@@ -149,7 +158,7 @@ class Grid : Button
             }
             newValue = -1;
             break;
-        case 3:
+        case 3: // arrow (left or right)
             // If on left or right, flip accordingly
             if (x_idx == GRID_X - 1)
             {
@@ -173,7 +182,7 @@ class Grid : Button
             }
             newValue = -1;
             break;
-        case 4:
+        case 4: // start tile
             // Clear old start/end so only one per level
             if (start_x > -1)
                 tiles[start_x][start_y] = 16;
@@ -181,7 +190,7 @@ class Grid : Button
             start_y = y_idx;
             newValue = 19;
             break;
-        case 5:
+        case 5: // end tile
             if (end_x > -1)
                 tiles[end_x][end_y] = 16;
             end_x = x_idx;
@@ -219,6 +228,7 @@ class Grid : Button
         return newValue;
     }
 
+    /// Renders the tile grid and its UI representation.
     override void Render()
     {
         SDL_Rect square = SDL_Rect(x, 0, square_size, square_size);
