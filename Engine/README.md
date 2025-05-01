@@ -1,14 +1,14 @@
 ## Add any additional notes here
 
-*your additional notes, or things TA's and instructors should know*
+Enjoy the game!
 
 ## Game/Engine Publicity
 
-**Project Website**: *please edit the project website with a link here* (See part 3)
+**Project Website**: [website](https://andrewfu1.github.io/bamn-website/) (See part 3)
 
 ## Compilation Instructions
 
-*Please edit if there are any special build instructions beyond running `dub`*
+Just run `dub` from within `Engine/`
 
 ## Project Hieararchy
 
@@ -16,9 +16,9 @@ In the future, other engineers may take on our project, so we have to keep it or
 
 ### ./Engine Directory Organization
 
-- Docs 
+- docs 
     - Source Code Documentation
-- Assets
+- assets
     - Art assets (With the Sub directories music, sound, images, and anything else)
 - src
     - source code(.d files) The make file or any build scripts that automate the building of your project should reside here.
@@ -28,10 +28,7 @@ In the future, other engineers may take on our project, so we have to keep it or
     - libraries (.so, .dll, .a, .dylib files). Note this is a good place to put SDL
 - bin
     - This is the directory where your built executable(.exe for windows, .app for Mac, or a.out for Linux) and any additional generated files are put after each build.
-- EngineBuild (Optional)
-    - You may optionally put a .zip to you final deliverable. One should be able to copy and paste this directory, and only this directory onto another machine and be able to run the game. This is optional because for this course we will be building your projects from source. However, in the game industry it is useful to always have a build of a game ready for testers, thus a game project hieararchy would likely have this directory in a repo or other storage medium.
-- ThirdParty
-    - Code that you have not written if any.
+
 
 **Note: For the final project you may add additional directories if you like, for example for your game which demonstrates your engine works.** 
 
