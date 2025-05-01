@@ -43,7 +43,7 @@ class Player : ScriptComponent
 
     override void Update()
     {
-        HandleSpikes();
+        HandleCollisions();
         vel_x = runSpeed * mInputRef.GetDir();
         if (grounded)
         {
@@ -67,13 +67,17 @@ class Player : ScriptComponent
         MoveAndHandleWallCollisions();
     }
 
-    void HandleSpikes() 
+    void HandleCollisions() 
     {
         auto collidedWith = mColliderRef.GetCollisions();
         foreach(obj; collidedWith)
         {
             if(obj == "spike")
                 mOwner.alive = false;
+            else if(obj.startsWith("apple"))
+            {
+                GameObject.GetGameObject(obj).alive = false;
+            }
         }
     }
 

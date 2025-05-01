@@ -51,13 +51,14 @@ class GameApplication : Application
 	void AdvanceFrame()
 	{
 		Input();
-		Update();
 		Render();
+		Update();
 	}
 
 	void AdvanceScene()
 	{
 		mCurrScene++;
+		writeln(mCurrScene);
 		if (mCurrScene > 2)
 		{
 			//DONE

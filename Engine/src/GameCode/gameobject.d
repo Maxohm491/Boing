@@ -107,11 +107,9 @@ class GameObject
 
 	bool alive = true;
 
-protected:
 	// Common components for all game objects
 	IComponent[ComponentType] mComponents;
 
-private:
 	// Any private fields that make up the game object
 	string mName;
 	size_t mID;
