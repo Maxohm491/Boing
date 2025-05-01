@@ -17,22 +17,36 @@ import std.math;
 
 import std.stdio;
 
+/// Stores simple key-value integer game state.
 struct GameState
 {
+    /// Maps a string key to an integer value.
     int[string] mIntMap;
 }
 
+/// Represents a scene containing game objects, a tilemap, and associated state.
 class Scene
 {
+<<<<<<< HEAD
     GameObject[] gameObjects; // Don't use a scene tree bc that's complicated
     GameObject player;
+=======
+    /// List of all active GameObjects in the scene.
+    GameObject[] gameObjects;
+    /// Global state information for the scene.
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
     GameState mGameState;
+    /// Reference to the SDL_Renderer for drawing operations.
     SDL_Renderer* mRendererRef;
     SDL_Point mSpawnPoint;
     GameObject tilemap;
     void delegate() mOnComplete;
 
-    // Create scene 
+    // Create scene /// Constructs a Scene and loads it from a JSON file.
+    ///
+    /// Params:
+    ///     r = The SDL_Renderer used for rendering.
+    ///     sceneIndex = Index used to select which scene JSON to load.
     this(SDL_Renderer* r, int sceneIndex, void delegate() onComplete)
     {
         mRendererRef = r;
@@ -40,7 +54,14 @@ class Scene
         LoadSceneFromJson("./assets/scenes/scene" ~ to!string(sceneIndex) ~ ".json");
     }
 
-    GameObject MakePlayer()
+    /// Creates and returns a player GameObject at a specified location.
+    ///
+    /// Params:
+    ///     location = The initial SDL_Point position for the player.
+    ///
+    /// Returns:
+    ///     A fully initialized player GameObject.
+    GameObject MakePlayer(SDL_Point location)
     {
         player = null;
         player = MakeSprite("player");
@@ -63,7 +84,7 @@ class Scene
         sprite.mRect.h = TILE_SIZE;
 
         collider.rect.w = TILE_SIZE;
-        collider.rect.h = (TILE_SIZE * 5) / 8; // be generous
+        collider.rect.h = (TILE_SIZE * 5) / 8; 
         collider.offset.x = 0;
         collider.offset.y = (TILE_SIZE * 3) / 8;
 
@@ -77,6 +98,7 @@ class Scene
         return player;
     }
 
+<<<<<<< HEAD
     GameObject MakeApple(SDL_Point location)
     {
         GameObject apple = MakeCollider("apple");
@@ -116,6 +138,12 @@ class Scene
     }
 
     /// Spawns player, end, spikes, arrows, and walls
+=======
+    /// Loads a scene from a JSON file, creating GameObjects based on tile definitions.
+    ///
+    /// Params:
+    ///     filename = Path to the scene JSON file.
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
     void LoadSceneFromJson(string filename)
     {
 
@@ -132,15 +160,19 @@ class Scene
             foreach (cell; rowVal.array)
             {
                 int value = cell.get!int;
-                if (value == 19)// start
+                if (value == 19) // Start tile
                 {
                     mSpawnPoint = SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x));
                     value = 16;
                 } 
-                else if (value == 20) // end
+                else if (value == 20) // End tile
                 {
+<<<<<<< HEAD
                     value = 28; // apple
                     AddGameObject(MakeApple(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x))));
+=======
+                    value = 28; 
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
                 }
                 else if (value == 17) // up spike
                     AddGameObject(MakeSpike(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x)), true));
@@ -152,9 +184,12 @@ class Scene
             y++;
         }
 
+<<<<<<< HEAD
         tilemap = GameObjectFactory!(ComponentType.TEXTURE,
             ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
 
+=======
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
         TextureComponent texture = cast(TextureComponent) tilemap.GetComponent(
             ComponentType.TEXTURE);
         TilemapSprite sprite = cast(TilemapSprite) tilemap.GetComponent(
@@ -166,13 +201,21 @@ class Scene
         sprite.LoadMetaData("./assets/images/tilemap.json");
 
         sprite.mRendererRef = mRendererRef;
-        sprite.tiles = buf; // This is fine since the static array is stored by value
+        sprite.tiles = buf;
         collider.tiles = buf;
-        AddGameObject(tilemap);
 
+<<<<<<< HEAD
         AddGameObject(MakePlayer());
+=======
+        AddGameObject(tilemap);
+        AddGameObject(player);
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
     }
 
+    /// Passes an SDL input event to all GameObjects in the scene.
+    ///
+    /// Params:
+    ///     e = The SDL_Event to process.
     void Input(SDL_Event e)
     {
         foreach (obj; gameObjects)
@@ -181,6 +224,7 @@ class Scene
         }
     }
 
+    /// Updates all GameObjects and performs collision detection and cleanup.
     void Update()
     {
         // Update Transforms
@@ -189,8 +233,15 @@ class Scene
             obj.Update();
         }
 
+<<<<<<< HEAD
         // Update collisions of player
         auto collider = cast(ColliderComponent) player.GetComponent(
+=======
+        // Update Collisions
+        foreach (ref objComponent; gameObjects[1 .. $])
+        {
+            auto collider = cast(ColliderComponent) objComponent.GetComponent(
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
                 ComponentType.COLLIDER);
 
         if (collider !is null)
@@ -207,8 +258,12 @@ class Scene
         //     }
         // }
 
+<<<<<<< HEAD
         // Check deaths
         bool respawn = false;
+=======
+        // Remove dead GameObjects
+>>>>>>> a54fd3c4c84af0386bfe1ce011aa219845d671ca
         for (auto i = gameObjects.length; i > 0; i -= 1)
         {
             if (!gameObjects[i - 1].alive)
@@ -229,6 +284,7 @@ class Scene
         }
     }
 
+    /// Renders all GameObjects in the scene.
     void Render()
     {
         foreach (obj; gameObjects)
@@ -237,6 +293,10 @@ class Scene
         }
     }
 
+    /// Adds a GameObject to the scene.
+    ///
+    /// Params:
+    ///     go = The GameObject to add.
     void AddGameObject(GameObject go)
     {
         gameObjects ~= go;
