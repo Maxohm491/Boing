@@ -20,7 +20,7 @@ class Player : ScriptComponent
     TilemapCollider mTilemap;
     float runSpeed = 7;
     float minJumpSpeed = 7;
-    float maxJumpSpeed = 17; // To make a nice fun jump set max when they hit space ad min when they let go
+    float maxJumpSpeed = 17; // To make a nice fun jump set max when they hit space and min when they let go
     float maxVertSpeed = 22;
     float gravity = 0.55;
     float vel_y = 0; // Positive is up
@@ -78,6 +78,12 @@ class Player : ScriptComponent
                 .rect.w, mColliderRef.rect.h);
 
         auto colls = mTilemap.GetWallCollisions(&newColliderPos);
+        
+        // Check boundaries
+        // SDL_Rect boundsOverlap;
+        // SDL_Rect left = SDL_Rect(-TILE_SIZE, 0, );
+        // if(SDL_IntersectRect())
+
         if (colls.length == 0) // 0 — clear, just move
         {
             mTransformRef.Translate(vel_x, -vel_y);
@@ -85,8 +91,8 @@ class Player : ScriptComponent
             return;
         }
 
-        /* 2. Fuse 2 colliding tiles into one bounding box ----------------- */
-        if (colls.length <= 2)
+        // If two straight
+        if (colls.length == 1 || (colls.length == 2 && (colls[0].x == colls[1].x || colls[0].y == colls[1].y)))
         {
             SDL_Rect bb = colls[0];
             foreach (c; colls[1 .. $])

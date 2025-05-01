@@ -83,20 +83,49 @@ class TilemapCollider : IComponent
     }
 
     /// Returns rects of wall collisions
-    SDL_Rect[] GetWallCollisions(SDL_Rect* rect) {
+    SDL_Rect[] GetWallCollisions(SDL_Rect* rect)
+    {
         SDL_Rect[] toReturn;
         SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
         foreach (i; 0 .. GRID_Y)
         {
             foreach (j; 0 .. GRID_X)
             {
-                if(tiles[j][i] <= 15 && SDL_HasIntersection(rect, &square)) // If colliding with wall
+                if (tiles[j][i] <= 15 && SDL_HasIntersection(rect, &square)) // If colliding with wall
                     toReturn ~= square;
                 square.x += TILE_SIZE;
             }
             square.x = 0;
             square.y += TILE_SIZE;
         }
+
+        // Check side edges
+        SDL_Rect leftSquare = SDL_Rect(-TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
+        SDL_Rect rightSquare = SDL_Rect(SCREEN_X, 0, TILE_SIZE, TILE_SIZE);
+        foreach (i; 0 .. GRID_Y)
+        {
+            if (SDL_HasIntersection(rect, &leftSquare))
+                toReturn ~= leftSquare;
+            if (SDL_HasIntersection(rect, &rightSquare))
+                toReturn ~= rightSquare;
+            leftSquare.y += TILE_SIZE;
+            rightSquare.y += TILE_SIZE;
+        }
+
+        // Check top and bottom edges
+        SDL_Rect topSquare = SDL_Rect(0, -TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        SDL_Rect bottomSquare = SDL_Rect(0, SCREEN_Y, TILE_SIZE, TILE_SIZE);
+        foreach (i; 0 .. GRID_X)
+        {
+            if (SDL_HasIntersection(rect, &topSquare))
+                toReturn ~= topSquare;
+            if (SDL_HasIntersection(rect, &bottomSquare))
+                toReturn ~= bottomSquare;
+            topSquare.x += TILE_SIZE;
+            bottomSquare.x += TILE_SIZE;
+        }
+
         return toReturn;
     }
+
 }
