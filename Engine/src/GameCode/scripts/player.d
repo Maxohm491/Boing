@@ -20,8 +20,9 @@ class Player : ScriptComponent
     TilemapCollider mTilemap;
     float runSpeed = 7;
     float minJumpSpeed = 7;
-    float maxJumpSpeed = 14; // To make a nice fun jump set max when they hit space ad min when they let go
-    float gravity = 0.5;
+    float maxJumpSpeed = 17; // To make a nice fun jump set max when they hit space ad min when they let go
+    float maxVertSpeed = 22;
+    float gravity = 0.55;
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
     bool wasJumpPressed = false;
@@ -64,6 +65,7 @@ class Player : ScriptComponent
         wasJumpPressed = mInputRef.upPressed; // store for next frame
 
         vel_y -= gravity;
+        vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
         MoveAndHandleWallCollisions();
     }
 
@@ -79,6 +81,7 @@ class Player : ScriptComponent
         if (colls.length == 0) // 0 — clear, just move
         {
             mTransformRef.Translate(vel_x, -vel_y);
+            grounded = false;
             return;
         }
 
@@ -132,14 +135,14 @@ class Player : ScriptComponent
                 bb = SDL_Rect(x1, y1, x2 - x1, y2 - y1);
             }
 
-            SDL_Rect overlap;
-            SDL_IntersectRect(&newColliderPos, &bb, &overlap);
-            if (bb.x + (bb.w / 2) - overlap.x < overlap.x - bb.x) // left wall
+            // SDL_Rect overlap;
+            // SDL_IntersectRect(&newColliderPos, &bb, &overlap);
+            if (vel_x < 0) // left wall
                 mTransformRef.x = bb.x + TILE_SIZE;
             else // right wall
                 mTransformRef.x = bb.x;
 
-            if (bb.y + (bb.h / 2) - overlap.y < overlap.y - bb.y) // ceiling
+            if (vel_y > 0) // ceiling
                 mTransformRef.y = bb.y + TILE_SIZE - mColliderRef.offset.y;
             else // floor
             {
@@ -152,5 +155,9 @@ class Player : ScriptComponent
         }
 
         mTransformRef.Translate(vel_x, -vel_y);
+        if (vel_y != 0)
+        {
+            grounded = false;
+        }
     }
 }
