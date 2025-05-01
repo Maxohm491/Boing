@@ -17,26 +17,45 @@ import std.math;
 
 import std.stdio;
 
+/// Stores simple key-value integer game state.
 struct GameState
 {
+    /// Maps a string key to an integer value.
     int[string] mIntMap;
 }
 
+/// Represents a scene containing game objects, a tilemap, and associated state.
 class Scene
 {
-    GameObject[] gameObjects; // Don't use a scene tree bc that's complicated
+    /// List of all active GameObjects in the scene.
+    GameObject[] gameObjects;
+    /// Global state information for the scene.
     GameState mGameState;
+    /// Reference to the SDL_Renderer for drawing operations.
     SDL_Renderer* mRendererRef;
+    /// GameObject representing the tilemap.
     GameObject tilemap;
+    /// Whether the scene is currently active.
     bool mActive = true;
 
-    // Create scene 
+    /// Constructs a Scene and loads it from a JSON file.
+    ///
+    /// Params:
+    ///     r = The SDL_Renderer used for rendering.
+    ///     sceneIndex = Index used to select which scene JSON to load.
     this(SDL_Renderer* r, int sceneIndex)
     {
         mRendererRef = r;
         LoadSceneFromJson("./assets/scenes/scene" ~ to!string(sceneIndex) ~ ".json");
     }
 
+    /// Creates and returns a player GameObject at a specified location.
+    ///
+    /// Params:
+    ///     location = The initial SDL_Point position for the player.
+    ///
+    /// Returns:
+    ///     A fully initialized player GameObject.
     GameObject MakePlayer(SDL_Point location)
     {
         GameObject player = MakeSprite("player");
@@ -59,7 +78,7 @@ class Scene
         sprite.mRect.h = TILE_SIZE;
 
         collider.rect.w = TILE_SIZE;
-        collider.rect.h = (TILE_SIZE * 5) / 8; // be generous
+        collider.rect.h = (TILE_SIZE * 5) / 8; 
         collider.offset.x = 0;
         collider.offset.y = (TILE_SIZE * 3) / 8;
 
@@ -72,7 +91,10 @@ class Scene
         return player;
     }
 
-    /// Spawns player, end, spikes, arrows, and walls
+    /// Loads a scene from a JSON file, creating GameObjects based on tile definitions.
+    ///
+    /// Params:
+    ///     filename = Path to the scene JSON file.
     void LoadSceneFromJson(string filename)
     {
         GameObject player;
@@ -93,26 +115,20 @@ class Scene
             foreach (cell; rowVal.array)
             {
                 int value = cell.get!int;
-                if (value == 19)// start
+                if (value == 19) // Start tile
                 {
                     player = MakePlayer(SDL_Point(cast(int) (TILE_SIZE * y), cast(int) (TILE_SIZE * x)));
                     value = 16;
                 } 
-                else if (value == 20) // end
+                else if (value == 20) // End tile
                 {
-                    value = 28; // apple
+                    value = 28; 
                 }
 
                 buf[y][x++] = value;
             }
             y++;
         }
-
-        // Deal with start and end
-        // grid.start_x = obj["start_x"].get!int;
-        // grid.start_y = obj["start_y"].get!int;
-        // grid.end_x = obj["end_x"].get!int;
-        // grid.end_y = obj["end_y"].get!int;
 
         TextureComponent texture = cast(TextureComponent) tilemap.GetComponent(
             ComponentType.TEXTURE);
@@ -125,13 +141,17 @@ class Scene
         sprite.LoadMetaData("./assets/images/tilemap.json");
 
         sprite.mRendererRef = mRendererRef;
-        sprite.tiles = buf; // This is fine since the static array is stored by value
+        sprite.tiles = buf;
         collider.tiles = buf;
-        AddGameObject(tilemap);
 
+        AddGameObject(tilemap);
         AddGameObject(player);
     }
 
+    /// Passes an SDL input event to all GameObjects in the scene.
+    ///
+    /// Params:
+    ///     e = The SDL_Event to process.
     void Input(SDL_Event e)
     {
         foreach (obj; gameObjects)
@@ -140,6 +160,7 @@ class Scene
         }
     }
 
+    /// Updates all GameObjects and performs collision detection and cleanup.
     void Update()
     {
         // Update Transforms
@@ -148,7 +169,7 @@ class Scene
             obj.Update();
         }
 
-        // Update Collisios
+        // Update Collisions
         foreach (ref objComponent; gameObjects[1 .. $])
         {
             auto collider = cast(ColliderComponent) objComponent.GetComponent(
@@ -160,7 +181,7 @@ class Scene
             }
         }
 
-        // Check deaths
+        // Remove dead GameObjects
         for (auto i = gameObjects.length; i > 0; i -= 1)
         {
             if (!gameObjects[i - 1].alive)
@@ -168,6 +189,7 @@ class Scene
         }
     }
 
+    /// Renders all GameObjects in the scene.
     void Render()
     {
         foreach (obj; gameObjects)
@@ -176,6 +198,10 @@ class Scene
         }
     }
 
+    /// Adds a GameObject to the scene.
+    ///
+    /// Params:
+    ///     go = The GameObject to add.
     void AddGameObject(GameObject go)
     {
         gameObjects ~= go;
