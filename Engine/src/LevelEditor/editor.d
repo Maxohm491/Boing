@@ -30,12 +30,14 @@ class Editor : Application
     immutable int START_X = 364; /// The x-coord of the start of grid
     bool running = false; /// Whether the editor is currently running
 
+    /// Constructor: initializes the editor, its UI, and scene data.
     this(SDL_Renderer* r)
     {
         mRendererRef = r;
 
         ui = new UserInterface();
 
+        // Load background image
         background = new Texture();
         background.LoadTexture("./assets/images/editor_background.bmp", mRendererRef);
         backgroundLocation = SDL_Rect(0, 0, SCREEN_X, SCREEN_Y);
@@ -45,6 +47,7 @@ class Editor : Application
         tileTexture.LoadTexture("./assets/images/tilemap.bmp", mRendererRef);
         tilemap = new Tilemap("./assets/images/tilemap.json", mRendererRef, tileTexture);
 
+        // Initialize the editable tile grid
         grid = new Grid(mRendererRef, START_X, tilemap, &brush);
         ui.AddButton(grid);
 
@@ -68,12 +71,15 @@ class Editor : Application
         ui.AddButton(button);
     }
 
+    /// Called when the "Play" button is clicked.
+    /// Saves the current scene and switches back to the main app.
     void PlayClicked(SDL_Point _)
     {
         SaveCurrentScene(scene);
         switchAppCallback();
     }
 
+    /// Callback to switch scenes, invoked by SceneButtons.
     void SwitchScene(int newScene)
     {
         SaveCurrentScene(scene);
@@ -131,6 +137,7 @@ class Editor : Application
         std.file.write("./assets/scenes/scene" ~ to!string(scene_num) ~ ".json", root.toString());
     }
 
+    /// Renders the full editor UI and background.
     void Render()
     {
         SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -140,6 +147,7 @@ class Editor : Application
         SDL_RenderPresent(mRendererRef);
     }
 
+    /// Processes SDL input events, including mouse clicks and drags.
     void Input()
     {
         SDL_Event event;
@@ -174,16 +182,19 @@ class Editor : Application
         }
     }
 
+    /// Main tick loop: renders frame and handles input.
     override void Tick() {
         Render();
         Input();
     }
 
+    /// Called when the editor is started. Loads the currently selected scene.
     override void Start()
     {
         LoadScene(scene);
     }
 
+    /// Called when the editor is stopped. Saves the current scene state.
     override void Stop()
     {
         SaveCurrentScene(scene);
