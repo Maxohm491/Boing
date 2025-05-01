@@ -8,35 +8,41 @@ import std.json;
 import std.stdio;
 import constants;
 
-/// These components are just for the background and platform tiles of the tilemap
-/// This could be done with ordinary colliders, but that's inefficient
+/// These components are just for the background and platform tiles of the tilemap.
+/// This could be done with ordinary colliders, but that's inefficient for static environments.
 
+/// A component that renders a static tilemap background using a texture atlas.
 class TilemapSprite : IComponent
 {
+    /// 2D array representing tile indices at each grid location.
     int[GRID_Y][GRID_X] tiles;
 
+    /// List of source rectangles (frames) for each tile in the texture.
     SDL_Rect[] mFrames;
+    /// Reference to the SDL_Renderer used for drawing.
     SDL_Renderer* mRendererRef;
+    /// Reference to the TextureComponent providing the tilemap texture.
     TextureComponent mTextureRef;
 
+    /// Constructs a TilemapSprite component attached to the given GameObject.
     this(GameObject owner)
     {
         mOwner = owner;
         mTextureRef = cast(TextureComponent) mOwner.GetComponent(ComponentType.TEXTURE);
     }
 
-    /// Load a tilemap from a file
+    /// Loads the metadata describing the tileset from a JSON file.
+    ///
+    /// Params:
+    ///     filename = Path to the JSON file describing tile dimensions and layout.
     void LoadMetaData(string filename)
     {
         auto jsonString = File(filename, "r").byLine.joiner("\n");
         auto json = parseJSON(jsonString);
 
-        // Fill mFrames:
-        for (auto topBound = 0; topBound < json["height"].integer; topBound += json["tileHeight"]
-            .integer)
+        for (auto topBound = 0; topBound < json["height"].integer; topBound += json["tileHeight"].integer)
         {
-            for (auto leftBound = 0; leftBound < json["width"].integer; leftBound += json["tileWidth"]
-                .integer)
+            for (auto leftBound = 0; leftBound < json["width"].integer; leftBound += json["tileWidth"].integer)
             {
                 SDL_Rect newFrame;
                 newFrame.x = leftBound;
@@ -48,6 +54,7 @@ class TilemapSprite : IComponent
         }
     }
 
+    /// Renders the full tilemap to the screen.
     void Render()
     {
         SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
@@ -63,6 +70,11 @@ class TilemapSprite : IComponent
         }
     }
 
+    /// Renders a single tile based on its index.
+    ///
+    /// Params:
+    ///     index = The tile index into the frames array.
+    ///     location = The destination rectangle where the tile will be drawn.
     void RenderTile(int index, SDL_Rect* location)
     {
         // Do nothing if given -1
@@ -73,20 +85,30 @@ class TilemapSprite : IComponent
     }
 }
 
+/// A component that handles collision detection against static tiles in the tilemap.
 class TilemapCollider : IComponent
 {
+    /// 2D array representing tile indices at each grid location.
     int[GRID_Y][GRID_X] tiles;
 
+    /// Constructs a TilemapCollider component attached to the given GameObject.
     this(GameObject owner)
     {
         mOwner = owner;
     }
 
-    /// Returns rects of wall collisions
+    /// Returns a list of wall collision rectangles intersecting the given rectangle.
+    ///
+    /// Params:
+    ///     rect = Pointer to the rectangle to test collisions against.
+    ///
+    /// Returns:
+    ///     An array of SDL_Rects representing walls that the input rectangle collides with.
     SDL_Rect[] GetWallCollisions(SDL_Rect* rect)
     {
         SDL_Rect[] toReturn;
         SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
+
         foreach (i; 0 .. GRID_Y)
         {
             foreach (j; 0 .. GRID_X)
@@ -127,5 +149,4 @@ class TilemapCollider : IComponent
 
         return toReturn;
     }
-
 }
