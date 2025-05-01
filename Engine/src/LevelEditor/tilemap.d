@@ -6,12 +6,19 @@ import std.stdio;
 import std.algorithm;
 import std.string;
 
+/// A wrapper around SDL texture loading and rendering.
+/// Used to load BMPs and support transparent backgrounds via colorkeying.
 class Texture
 {
     SDL_Texture* mTexture;
     SDL_Renderer* mRendererRef;
-    alias mTexture this;
+    alias mTexture this;         /// Allows implicit access to mTexture when passed to SDL functions.
 
+    /* Loads a BMP texture from file and sets black (0,0,0) as transparent.
+     Params:
+         filename = Path to the BMP file.
+         r = SDL renderer that will render this texture.
+    */
     void LoadTexture(string filename, SDL_Renderer* r)
     {
         mRendererRef = r;
@@ -21,13 +28,20 @@ class Texture
         SDL_FreeSurface(surface);
     }
 
+    /*
+         Renders this texture at the given location.
+    
+         Params:
+             location = Destination rectangle on the screen.
+    */
     void Render(SDL_Rect* location)
     {
         SDL_RenderCopy(mRendererRef, mTexture, null, location);
     }
 }
 
-// Similar to an animated sprite
+/// Handles rendering of individual tile frames from a single tilemap texture.
+/// Tile metadata (frame size, grid layout) is loaded from a JSON metadata file.
 class Tilemap
 {
 
