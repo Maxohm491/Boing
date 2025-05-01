@@ -49,7 +49,8 @@ class TextureComponent : IComponent
 class ColliderComponent : IComponent
 {
 	TransformComponent mTransformRef;
-	SDL_Rect mRect;
+	SDL_Rect rect;
+	SDL_Point offset;
 	string[] mCollisions;
 
 	this(GameObject owner)
@@ -63,8 +64,8 @@ class ColliderComponent : IComponent
 		// Round posittion to a pixel
 		// 8 pixels/tile
 		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f; 
-		mRect.x = cast(int) (round(mTransformRef.x / pixelWidth) * pixelWidth);
-		mRect.y = cast(int) (round(mTransformRef.y / pixelWidth) * pixelWidth);
+		rect.x = cast(int) (round(mTransformRef.x / pixelWidth) * pixelWidth) + offset.x;
+		rect.y = cast(int) (round(mTransformRef.y / pixelWidth) * pixelWidth) + offset.y;
 	}
 
 	// Recursively check all collidables
@@ -79,7 +80,7 @@ class ColliderComponent : IComponent
 			{
 				if (obj.GetID() != mOwner.GetID() &&
 					SDL_HasIntersection(&((cast(ColliderComponent) collider)
-						.mRect), &(mRect)))
+						.rect), &(rect)))
 				{
 					toReturn ~= obj.GetName();
 				}

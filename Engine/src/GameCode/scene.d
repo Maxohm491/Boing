@@ -58,8 +58,10 @@ class Scene
         sprite.mRect.w = TILE_SIZE;
         sprite.mRect.h = TILE_SIZE;
 
-        collider.mRect.w = TILE_SIZE;
-        collider.mRect.h = (TILE_SIZE * 5) / 8; // be generous
+        collider.rect.w = TILE_SIZE;
+        collider.rect.h = (TILE_SIZE * 5) / 8; // be generous
+        collider.offset.x = 0;
+        collider.offset.y = (TILE_SIZE * 3) / 8;
 
         auto input = new InputComponent(player);
         player.AddComponent!(ComponentType.INPUT)(input);
@@ -74,6 +76,10 @@ class Scene
     void LoadSceneFromJson(string filename)
     {
         GameObject player;
+
+        tilemap = GameObjectFactory!(ComponentType.TEXTURE,
+            ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
+
         auto textIn = readText(filename);
         auto root = parseJSON(textIn);
         auto obj = root.object;
@@ -108,9 +114,6 @@ class Scene
         // grid.end_x = obj["end_x"].get!int;
         // grid.end_y = obj["end_y"].get!int;
 
-        tilemap = GameObjectFactory!(ComponentType.TEXTURE,
-            ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
-
         TextureComponent texture = cast(TextureComponent) tilemap.GetComponent(
             ComponentType.TEXTURE);
         TilemapSprite sprite = cast(TilemapSprite) tilemap.GetComponent(
@@ -120,6 +123,7 @@ class Scene
 
         texture.LoadTexture("./assets/images/tilemap.bmp", mRendererRef);
         sprite.LoadMetaData("./assets/images/tilemap.json");
+
         sprite.mRendererRef = mRendererRef;
         sprite.tiles = buf; // This is fine since the static array is stored by value
         collider.tiles = buf;

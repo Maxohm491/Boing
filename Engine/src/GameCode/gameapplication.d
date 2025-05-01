@@ -68,7 +68,7 @@ class GameApplication : Application
 
     override void Start()
     {
-        
+		mScenes[0] = new Scene(mRendererRef, 1);
     }
 
     override void Stop()

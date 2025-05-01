@@ -82,13 +82,21 @@ class TilemapCollider : IComponent
         mOwner = owner;
     }
 
-    /// Gets which tile a point is in. Returns: [x, y]
-    SDL_Point WhichTile(SDL_Point point) {
-        return SDL_Point(point.x / TILE_SIZE, point.y / TILE_SIZE);
-    }
-
-    /// Returns distance from the edges of the rect to the nearest wall, [x,-x,y,-y]
-    void GetWallDistance(SDL_Rect rect) {
-        int right = rect.x + rect.w;
+    /// Returns rects of wall collisions
+    SDL_Rect[] GetWallCollisions(SDL_Rect* rect) {
+        SDL_Rect[] toReturn;
+        SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
+        foreach (i; 0 .. GRID_Y)
+        {
+            foreach (j; 0 .. GRID_X)
+            {
+                if(tiles[j][i] <= 15 && SDL_HasIntersection(rect, &square)) // If colliding with wall
+                    toReturn ~= square;
+                square.x += TILE_SIZE;
+            }
+            square.x = 0;
+            square.y += TILE_SIZE;
+        }
+        return toReturn;
     }
 }
