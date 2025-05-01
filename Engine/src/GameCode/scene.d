@@ -100,7 +100,7 @@ class Scene
                 } 
                 else if (value == 20) // end
                 {
-                    value = 16;
+                    value = 28; // apple
                 }
 
                 buf[y][x++] = value;
