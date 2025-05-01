@@ -22,7 +22,7 @@ class Player : ScriptComponent
     float minJumpSpeed = 7;
     float maxJumpSpeed = 17; // To make a nice fun jump set max when they hit space and min when they let go
     float maxVertSpeed = 22;
-    float gravity = 0.55;
+    float gravity = 0.75;
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
     bool wasJumpPressed = false;

@@ -18,17 +18,14 @@ shared static this(){
     // Load the SDL libraries from bindbc-sdl
     // on the appropriate operating system
     version(Windows){
-        writeln("Searching for SDL on Windows");
         ret = loadSDL("SDL2.dll");
         loadSDLMixer();
     }
     version(OSX){
-        writeln("Searching for SDL on Mac");
         ret = loadSDL();
         loadSDLMixer();
     }
     version(linux){ 
-        writeln("Searching for SDL on Linux");
         ret = loadSDL();
         loadSDLMixer();
     }

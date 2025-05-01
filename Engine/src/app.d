@@ -67,11 +67,13 @@ class MainApplication
         if (gameRunning)
         {
             game.Stop();
+            editor.scene = game.mCurrScene + 1;
             editor.Start();
         }
         else
         {
             editor.Stop();
+            game.mCurrScene  = editor.scene - 1;
             game.Start();
         }
         gameRunning = !gameRunning;
@@ -86,10 +88,7 @@ class MainApplication
 // Main entry point
 void main()
 {
+    writeln("Welcome to Bamn Engine! Esc to edit levels.");
     MainApplication mainApp = new MainApplication();
-    // TEMPORARILY just run editor by defauly
-    mainApp.SwitchRunningApp();
-
     mainApp.Run();
-    
 }

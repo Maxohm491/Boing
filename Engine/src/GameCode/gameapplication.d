@@ -28,6 +28,8 @@ class GameApplication : Application
 			// Either quit or let the scene handle it
 			if (event.type == SDL_QUIT)
 				quitCallback();
+			else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+				switchAppCallback();
 			else
 				mScenes[mCurrScene].Input(event);
 		}
@@ -58,17 +60,16 @@ class GameApplication : Application
 	void AdvanceScene()
 	{
 		mCurrScene++;
-		writeln(mCurrScene);
 		if (mCurrScene > 2)
 		{
-			//DONE
-			quitCallback();
+			mCurrScene = 0;
+			switchAppCallback();
 		}
 	}
 
 	void LoadScenesFromJsons()
 	{
-		mScenes = null; 
+		mScenes = null;
 
 		mScenes ~= new Scene(mRendererRef, 1, &AdvanceScene);
 		mScenes ~= new Scene(mRendererRef, 2, &AdvanceScene);
