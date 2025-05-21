@@ -1,6 +1,6 @@
 ## Add any additional notes here
 
-Enjoy the game!
+SDL_2 must be installed. Enjoy the game!
 
 ## Game/Engine Publicity
 
@@ -8,7 +8,9 @@ Enjoy the game!
 
 ## Compilation Instructions
 
-Just run `dub` from within `Engine/`
+Run the Linux precompiled binary `./compiled_prog` from within `Engine/`!
+
+Alternatvely, build from source and run with `dub` from within `Engine/`.
 
 ## Project Hieararchy
 
