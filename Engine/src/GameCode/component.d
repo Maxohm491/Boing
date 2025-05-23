@@ -158,15 +158,13 @@ class SpriteComponent : IComponent {
 	void Render() {
 		// Round posittion to a pixel
 		// 8 pixels/tile
-		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f;
 		Vec2f screenPos = mTransformRef.GetScreenPos();
 		SDL_Rect drawRect = SDL_Rect(0, 0, 0, 0);
-		drawRect.x = cast(int)(round(screenPos.x / pixelWidth) * pixelWidth);
-		drawRect.y = cast(int)(round(screenPos.y / pixelWidth) * pixelWidth);
-		drawRect.w = cast(int)(round((mTransformRef.GetScreenScale().x * mRect.w) / pixelWidth) * pixelWidth);
-		drawRect.h = cast(int)(round((mTransformRef.GetScreenScale().y * mRect.w) / pixelWidth) * pixelWidth);
-		// mRect.x = cast(int)(round(mTransformRef.x / pixelWidth) * pixelWidth);
-		// mRect.y = cast(int)(round(mTransformRef.y / pixelWidth) * pixelWidth);
+		drawRect.x = cast(int)(round(screenPos.x / PIXEL_WIDTH) * PIXEL_WIDTH);
+		drawRect.y = cast(int)(round(screenPos.y / PIXEL_WIDTH) * PIXEL_WIDTH);
+		drawRect.w = cast(int)(round((mTransformRef.GetScreenScale().x * mRect.w) / PIXEL_WIDTH) * PIXEL_WIDTH);
+		drawRect.h = cast(int)(round((mTransformRef.GetScreenScale().y * mRect.w) / PIXEL_WIDTH) * PIXEL_WIDTH);
+
 
 		if (mFrames.length > 0) {
 			Frame frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];

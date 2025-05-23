@@ -154,6 +154,7 @@ class Scene {
     ///     filename = Path to the scene JSON file.
     void LoadSceneFromJson(string filename) {
         camera = new Camera();
+        camera.PositionCamera(0, 0); 
 
         tilemap = GameObjectFactory!(ComponentType.TRANSFORM, ComponentType.TEXTURE,
             ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
@@ -251,7 +252,7 @@ class Scene {
         auto playerTransform = cast(TransformComponent) player.GetComponent(
             ComponentType.TRANSFORM);
         Vec2f xy = playerTransform.mWorldMatrix.Frommat3GetTranslation();
-        camera.PositionCamera(-xy.x + (SCREEN_X / 2) - TILE_SIZE, -xy.y + (SCREEN_Y / 2) - TILE_SIZE); // center it exactly
+        // camera.PositionCamera(-xy.x + (SCREEN_X / 2) - TILE_SIZE, -xy.y + (SCREEN_Y / 2) - TILE_SIZE); // center on player
 
         // Set each objects local pos based on camera
         foreach (obj; gameObjects) {
