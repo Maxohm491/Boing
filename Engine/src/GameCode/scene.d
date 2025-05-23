@@ -27,14 +27,26 @@ struct GameState {
 
 class Camera {
     mat3 positionMat;
+    float scaleX = 1.0f;
+    float scaleY = 1.0f;
+    float posX = 0.0f;
+    float posY = 0.0f;
 
     void PositionCamera(float x, float y) {
-        positionMat = MakeTranslate(x, y);
+        posX = x;
+        posY = y;
+        updateMatrix();
     }
 
-    Vec2f GetPosition() {
-        Vec2f result = positionMat.Frommat3GetTranslation();
-        return result;
+    void ScaleCamera(float x, float y) {
+        scaleX = x;
+        scaleY = y;
+        updateMatrix();
+    }
+
+    void updateMatrix() {
+        // Scale, then translate
+        positionMat = MakeScale(scaleX, scaleY) * MakeTranslate(posX, posY);
     }
 }
 
@@ -155,6 +167,7 @@ class Scene {
     void LoadSceneFromJson(string filename) {
         camera = new Camera();
         camera.PositionCamera(0, 0); 
+        camera.ScaleCamera(1,1); // TODO: scaling does not quite work with pixel aligment. put pixel size in scenedata.
 
         tilemap = GameObjectFactory!(ComponentType.TRANSFORM, ComponentType.TEXTURE,
             ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
@@ -259,7 +272,7 @@ class Scene {
             auto transform = cast(TransformComponent) obj.GetComponent(
                 ComponentType.TRANSFORM);
             if (transform !is null) {
-                transform.mScreenMatrix = transform.mWorldMatrix * camera.positionMat;
+                transform.mScreenMatrix = camera.positionMat * transform.mWorldMatrix;
             }
         }
         foreach (obj; gameObjects) {

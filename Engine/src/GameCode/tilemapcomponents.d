@@ -56,8 +56,8 @@ class TilemapSprite : IComponent {
 
     /// Renders the full tilemap to the screen.
     void Render() {
-        int screenTileSizeX = TILE_SIZE * cast(int) mTransformRef.GetScreenScale().x;
-        int screenTileSizeY = TILE_SIZE * cast(int) mTransformRef.GetScreenScale().y;
+        int screenTileSizeX = cast(int) (TILE_SIZE * mTransformRef.GetScreenScale().x);
+        int screenTileSizeY = cast(int) (TILE_SIZE * mTransformRef.GetScreenScale().y);
         Vec2f screenPos = mTransformRef.GetScreenPos();
 
         SDL_Rect square = SDL_Rect(
