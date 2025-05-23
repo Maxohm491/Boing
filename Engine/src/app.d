@@ -5,6 +5,8 @@ import bindbc.sdl;
 import LevelEditor.editor;
 import GameCode.gameapplication;
 import constants;
+import GameCode.resourcemanager;
+import core.memory;
 
 // Both gameapplcation and editor extend this
 // Both hould be very self contained and call switchAppCallback() when they want to switch scenes
@@ -91,4 +93,6 @@ void main()
     writeln("Welcome to Bamn Engine! Esc to edit levels.");
     MainApplication mainApp = new MainApplication();
     mainApp.Run();
+    writeln("Goodbye!");
+    ResourceManager.FreeAllTextures();
 }
