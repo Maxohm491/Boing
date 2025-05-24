@@ -27,6 +27,7 @@ class Editor : Application {
     Grid grid; /// The grid of tiles
 
     immutable int START_X = 364; /// The x-coord of the start of grid
+    immutable int END_Y = 686; /// The y-coord of the end of grid
     bool running = false; /// Whether the editor is currently running
 
     /// Constructor: initializes the editor, its UI, and scene data.
@@ -46,7 +47,8 @@ class Editor : Application {
         tilemap = new Tilemap("./assets/images/tilemap.json", mRendererRef, tileTexture);
 
         // Initialize the editable tile grid
-        grid = new Grid(mRendererRef, START_X, tilemap, &brush);
+        grid = new Grid(mRendererRef, START_X, END_Y, tilemap, &brush);
+        grid.SetDimensions(GRID_X, GRID_Y);
         ui.AddButton(grid);
 
         // Make brush buttons manually
@@ -89,10 +91,14 @@ class Editor : Application {
         auto root = parseJSON(textIn);
         auto obj = root.object;
 
-        int[GRID_Y][GRID_X] buf;
+        int[][] buf;
+        auto tilesArray = obj["tiles"].array;
+        buf.length = tilesArray.length;
+        foreach (i, ref row; buf)
+            row.length = tilesArray[i].array.length;
 
         size_t y = 0;
-        foreach (rowVal; obj["tiles"].array) {
+        foreach (rowVal; tilesArray) {
             size_t x = 0;
             foreach (cell; rowVal.array)
                 buf[y][x++] = cell.get!int;
@@ -103,8 +109,8 @@ class Editor : Application {
         grid.start_y = obj["start_y"].get!int;
         grid.end_x = obj["end_x"].get!int;
         grid.end_y = obj["end_y"].get!int;
-        grid.tiles = buf; // This is fine since the static array is stored by value
-
+        grid.SetDimensions(cast(int) buf.length, cast(int) buf[0].length);
+        grid.tiles = buf; // This is fine but might break someday
     }
 
     /// Save the currently loaded scene to the correct scene number file
