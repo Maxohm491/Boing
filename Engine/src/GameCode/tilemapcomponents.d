@@ -16,7 +16,10 @@ import std.math;
 /// A component that renders a static tilemap background using a texture atlas.
 class TilemapSprite : IComponent {
     /// 2D array representing tile indices at each grid location.
-    int[GRID_Y][GRID_X] tiles;
+    // int[GRID_Y][GRID_X] tiles;
+    int[][] tiles;
+    int width;
+    int height;
 
     /// List of source rectangles (frames) for each tile in the texture.
     SDL_Rect[] mFrames;
@@ -30,6 +33,12 @@ class TilemapSprite : IComponent {
         mOwner = owner;
         mTextureRef = cast(TextureComponent) mOwner.GetComponent(ComponentType.TEXTURE);
         mTransformRef = cast(TransformComponent) mOwner.GetComponent(ComponentType.TRANSFORM);
+    }
+
+    void LoadTiles(int[][] tilemap) {
+        tiles = tilemap; // not a copy but probably fine
+        width = cast(int) tiles.length;
+        height = cast(int) tiles[0].length;
     }
 
     /// Loads the metadata describing the tileset from a JSON file.
@@ -56,8 +65,8 @@ class TilemapSprite : IComponent {
 
     /// Renders the full tilemap to the screen.
     void Render() {
-        int screenTileSizeX = cast(int) (TILE_SIZE * mTransformRef.GetScreenScale().x);
-        int screenTileSizeY = cast(int) (TILE_SIZE * mTransformRef.GetScreenScale().y);
+        int screenTileSizeX = cast(int)(TILE_SIZE * mTransformRef.GetScreenScale().x);
+        int screenTileSizeY = cast(int)(TILE_SIZE * mTransformRef.GetScreenScale().y);
         Vec2f screenPos = mTransformRef.GetScreenPos();
 
         SDL_Rect square = SDL_Rect(
@@ -66,8 +75,8 @@ class TilemapSprite : IComponent {
             screenTileSizeX,
             screenTileSizeY);
 
-        foreach (i; 0 .. GRID_Y) {
-            foreach (j; 0 .. GRID_X) {
+        foreach (i; 0 .. height) {
+            foreach (j; 0 .. width) {
                 RenderTile(tiles[j][i], &square);
                 square.x += screenTileSizeX;
             }
@@ -93,11 +102,19 @@ class TilemapSprite : IComponent {
 /// A component that handles collision detection against static tiles in the tilemap.
 class TilemapCollider : IComponent {
     /// 2D array representing tile indices at each grid location.
-    int[GRID_Y][GRID_X] tiles;
+    int[][] tiles;
+    int width;
+    int height;
 
     /// Constructs a TilemapCollider component attached to the given GameObject.
     this(GameObject owner) {
         mOwner = owner;
+    }
+
+    void LoadTiles(int[][] tilemap) {
+        tiles = tilemap; // not a copy but probably fine
+        width = cast(int) tiles.length;
+        height = cast(int) tiles[0].length;
     }
 
     /// Returns a list of wall collision rectangles intersecting the given rectangle.
@@ -111,8 +128,8 @@ class TilemapCollider : IComponent {
         SDL_Rect[] toReturn;
         SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
 
-        foreach (i; 0 .. GRID_Y) {
-            foreach (j; 0 .. GRID_X) {
+        foreach (i; 0 .. height) {
+            foreach (j; 0 .. width) {
                 if (tiles[j][i] <= 15 && SDL_HasIntersection(rect, &square)) // If colliding with wall
                 {
                     toReturn ~= square;
@@ -127,7 +144,7 @@ class TilemapCollider : IComponent {
         // Check side edges
         SDL_Rect leftSquare = SDL_Rect(-TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
         SDL_Rect rightSquare = SDL_Rect(SCREEN_X, 0, TILE_SIZE, TILE_SIZE);
-        foreach (i; 0 .. GRID_Y) {
+        foreach (i; 0 .. height) {
             if (SDL_HasIntersection(rect, &leftSquare))
                 toReturn ~= leftSquare;
             if (SDL_HasIntersection(rect, &rightSquare))
@@ -139,7 +156,7 @@ class TilemapCollider : IComponent {
         // Check top and bottom edges
         SDL_Rect topSquare = SDL_Rect(0, -TILE_SIZE, TILE_SIZE, TILE_SIZE);
         SDL_Rect bottomSquare = SDL_Rect(0, SCREEN_Y, TILE_SIZE, TILE_SIZE);
-        foreach (i; 0 .. GRID_X) {
+        foreach (i; 0 .. width) {
             if (SDL_HasIntersection(rect, &topSquare))
                 toReturn ~= topSquare;
             if (SDL_HasIntersection(rect, &bottomSquare))

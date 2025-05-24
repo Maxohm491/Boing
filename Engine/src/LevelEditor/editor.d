@@ -16,8 +16,7 @@ import std.conv;
 import std.string;
 
 // This will be the level editor/tilemap editor
-class Editor : Application
-{
+class Editor : Application {
     SDL_Renderer* mRendererRef;
     UserInterface ui;
     Texture background;
@@ -31,8 +30,7 @@ class Editor : Application
     bool running = false; /// Whether the editor is currently running
 
     /// Constructor: initializes the editor, its UI, and scene data.
-    this(SDL_Renderer* r)
-    {
+    this(SDL_Renderer* r) {
         mRendererRef = r;
 
         ui = new UserInterface();
@@ -73,23 +71,20 @@ class Editor : Application
 
     /// Called when the "Play" button is clicked.
     /// Saves the current scene and switches back to the main app.
-    void PlayClicked(SDL_Point _)
-    {
+    void PlayClicked(SDL_Point _) {
         SaveCurrentScene(scene);
         switchAppCallback();
     }
 
     /// Callback to switch scenes, invoked by SceneButtons.
-    void SwitchScene(int newScene)
-    {
+    void SwitchScene(int newScene) {
         SaveCurrentScene(scene);
         scene = newScene;
         LoadScene(scene);
     }
 
     /// Load a scene to the correct scene number file
-    void LoadScene(int scene_num)
-    {
+    void LoadScene(int scene_num) {
         auto textIn = readText("./assets/scenes/scene" ~ to!string(scene_num) ~ ".json");
         auto root = parseJSON(textIn);
         auto obj = root.object;
@@ -97,8 +92,7 @@ class Editor : Application
         int[GRID_Y][GRID_X] buf;
 
         size_t y = 0;
-        foreach (rowVal; obj["tiles"].array)
-        {
+        foreach (rowVal; obj["tiles"].array) {
             size_t x = 0;
             foreach (cell; rowVal.array)
                 buf[y][x++] = cell.get!int;
@@ -114,11 +108,9 @@ class Editor : Application
     }
 
     /// Save the currently loaded scene to the correct scene number file
-    void SaveCurrentScene(int scene_num)
-    {
+    void SaveCurrentScene(int scene_num) {
         JSONValue[] outer; // rows
-        foreach (row; grid.tiles)
-        {
+        foreach (row; grid.tiles) {
             JSONValue[] inner; // cols
             foreach (v; row)
                 inner ~= JSONValue(v); // scalar number
@@ -138,8 +130,7 @@ class Editor : Application
     }
 
     /// Renders the full editor UI and background.
-    void Render()
-    {
+    void Render() {
         SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(mRendererRef);
         background.Render(&backgroundLocation);
@@ -148,23 +139,19 @@ class Editor : Application
     }
 
     /// Processes SDL input events, including mouse clicks and drags.
-    void Input()
-    {
+    void Input() {
         SDL_Event event;
         int mouseX, mouseY;
-        while (SDL_PollEvent(&event))
-        {
+        while (SDL_PollEvent(&event)) {
             // Detect quits
             if (event.type == SDL_QUIT)
                 quitCallback();
-            if (event.type == SDL_MOUSEBUTTONDOWN)
-            {
+            if (event.type == SDL_MOUSEBUTTONDOWN) {
                 mouseX = event.button.x;
                 mouseY = event.button.y;
 
                 // Check if this was a click
-                if (event.button.state == SDL_PRESSED)
-                {
+                if (event.button.state == SDL_PRESSED) {
                     const clickPoint = SDL_Point(mouseX, mouseY);
                     ui.CheckClick(&clickPoint, true); // if not clicked then it wasn't clicked last frame and was just pressed
                 }
@@ -175,8 +162,7 @@ class Editor : Application
         int mask = SDL_GetMouseState(&mouseX, &mouseY);
 
         // Check if this was a click
-        if (mask == SDL_BUTTON_LEFT || mask == SDL_BUTTON_RIGHT)
-        {
+        if (mask == SDL_BUTTON_LEFT || mask == SDL_BUTTON_RIGHT) {
             const clickPoint = SDL_Point(mouseX, mouseY);
             ui.CheckClick(&clickPoint, false); // if not clicked then it wasn't clicked last frame and was just pressed
         }
@@ -189,14 +175,12 @@ class Editor : Application
     }
 
     /// Called when the editor is started. Loads the currently selected scene.
-    override void Start()
-    {
+    override void Start() {
         LoadScene(scene);
     }
 
     /// Called when the editor is stopped. Saves the current scene state.
-    override void Stop()
-    {
+    override void Stop() {
         SaveCurrentScene(scene);
     }
 }

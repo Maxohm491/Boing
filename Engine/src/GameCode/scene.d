@@ -62,11 +62,6 @@ class Scene {
     GameObject tilemap;
     void delegate() mOnComplete;
 
-    // Create scene /// Constructs a Scene and loads it from a JSON file.
-    ///
-    /// Params:
-    ///     r = The SDL_Renderer used for rendering.
-    ///     sceneIndex = Index used to select which scene JSON to load.
     this(SDL_Renderer* r, int sceneIndex, void delegate() onComplete) {
         mRendererRef = r;
         mOnComplete = onComplete;
@@ -166,8 +161,8 @@ class Scene {
     ///     filename = Path to the scene JSON file.
     void LoadSceneFromJson(string filename) {
         camera = new Camera();
-        camera.PositionCamera(0, 0); 
-        camera.ScaleCamera(1,1); // TODO: scaling does not quite work with pixel aligment. put pixel size in scenedata.
+        camera.PositionCamera(0, 0);
+        camera.ScaleCamera(1, 1); // TODO: scaling does not quite work with pixel aligment. put pixel size in scenedata.
 
         tilemap = GameObjectFactory!(ComponentType.TRANSFORM, ComponentType.TEXTURE,
             ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
@@ -176,10 +171,15 @@ class Scene {
         auto root = parseJSON(textIn);
         auto obj = root.object;
 
-        int[GRID_Y][GRID_X] buf;
+        int[][] buf;
+
+        auto tilesArray = obj["tiles"].array;
+        buf.length = tilesArray.length;
+        foreach (i, ref row; buf)
+            row.length = tilesArray[i].array.length;
 
         size_t y = 0;
-        foreach (rowVal; obj["tiles"].array) {
+        foreach (rowVal; tilesArray) {
             size_t x = 0;
             foreach (cell; rowVal.array) {
                 int value = cell.get!int;
@@ -224,8 +224,8 @@ class Scene {
         sprite.LoadMetaData("./assets/images/tilemap.json");
 
         sprite.mRendererRef = mRendererRef;
-        sprite.tiles = buf;
-        collider.tiles = buf;
+        sprite.LoadTiles(buf);
+        collider.LoadTiles(buf);
 
         AddGameObject(tilemap);
         AddGameObject(MakePlayer());
