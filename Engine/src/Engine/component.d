@@ -9,6 +9,7 @@ import std.json;
 import bindbc.sdl;
 import Engine.gameobject;
 import Engine.resourcemanager;
+import Engine.tilemapcomponents;
 import std.math;
 import constants;
 import linear;
@@ -46,6 +47,9 @@ class ColliderComponent : IComponent {
 	TransformComponent mTransformRef;
 	SDL_Rect rect;
 	SDL_Point offset;
+	ColliderComponent[]* solids;
+	TilemapCollider tilemapCollider = null;
+	GameObject* tilemap = null;
 	string[] mCollisions;
 
 	this(GameObject owner) {
@@ -58,29 +62,52 @@ class ColliderComponent : IComponent {
 		rect.y = mTransformRef.worldPos.y + offset.y;
 	}
 
-	// Recursively check all collidables
-	string[] CheckCollisions(GameObject[] toCheck) {
-		string[] toReturn;
-		// check for actual intersection
-		foreach (obj; toCheck) {
-			auto collider = obj.GetComponent(ComponentType.COLLIDER);
-			if (collider !is null) {
-				if (obj.GetID() != mOwner.GetID() &&
-					SDL_HasIntersection(&((cast(ColliderComponent) collider)
-						.rect), &(rect))) {
-					toReturn ~= obj.GetName();
-				}
+	bool CollidesWithSolid() {
+		if(tilemapCollider is null && tilemap !is null) {
+			tilemapCollider = cast(TilemapCollider) tilemap.GetComponent(ComponentType.TILEMAP_COLLIDER);
+			if(tilemapCollider is null) {
+				assert(0, "Tilemap collider not found");
 			}
 		}
-		mCollisions = toReturn;
+		else if(tilemap is null) {
+			assert(0, "Tilemap not found");
+		}
 
-		return toReturn;
+		if(tilemapCollider.CheckRect(rect).length) {
+			return true;
+		}
+        if (solids is null) return false;
+        foreach (solid; *solids) {
+            if (SDL_HasIntersection(&rect, &(solid.rect))) {
+                return true;
+            }
+        }
+        return false;
 	}
 
-	/// Return names of gameobjects that the collider has collided with since last frame
-	string[] GetCollisions() {
-		return mCollisions;
-	}
+	// Recursively check all collidables
+	// string[] CheckCollisions(GameObject[] toCheck) {
+	// 	string[] toReturn;
+	// 	// check for actual intersection
+	// 	foreach (obj; toCheck) {
+	// 		auto collider = obj.GetComponent(ComponentType.COLLIDER);
+	// 		if (collider !is null) {
+	// 			if (obj.GetID() != mOwner.GetID() &&
+	// 				SDL_HasIntersection(&((cast(ColliderComponent) collider)
+	// 					.rect), &(rect))) {
+	// 				toReturn ~= obj.GetName();
+	// 			}
+	// 		}
+	// 	}
+	// 	mCollisions = toReturn;
+
+	// 	return toReturn;
+	// }
+
+	// /// Return names of gameobjects that the collider has collided with since last frame
+	// string[] GetCollisions() {
+	// 	return mCollisions;
+	// }
 }
 
 /// Store a series of frames and multiple animation sequences that can be played

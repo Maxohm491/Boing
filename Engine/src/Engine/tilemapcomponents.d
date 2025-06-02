@@ -115,22 +115,15 @@ class TilemapCollider : IComponent {
         height = cast(int) tiles[0].length;
     }
 
-    /// Returns a list of wall collision rectangles intersecting the given rectangle.
-    ///
-    /// Params:
-    ///     rect = Pointer to the rectangle to test collisions against.
-    ///
-    /// Returns:
-    ///     An array of SDL_Rects representing walls that the input rectangle collides with.
-    SDL_Rect[] GetWallCollisions(SDL_Rect* rect) {
-        SDL_Rect[] toReturn;
+    // Return true iff the given rectangle collides with any solid tile in the tilemap.
+    bool CheckRect(SDL_Rect* rect) {
         SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
 
         foreach (i; 0 .. height) {
             foreach (j; 0 .. width) {
                 if (tiles[j][i] <= 15 && SDL_HasIntersection(rect, &square)) // If colliding with wall
                 {
-                    toReturn ~= square;
+                    return true; // Return true immediately if any wall is hit
                 }
 
                 square.x += TILE_SIZE;
@@ -144,9 +137,9 @@ class TilemapCollider : IComponent {
         SDL_Rect rightSquare = SDL_Rect(SCREEN_X, 0, TILE_SIZE, TILE_SIZE);
         foreach (i; 0 .. height) {
             if (SDL_HasIntersection(rect, &leftSquare))
-                toReturn ~= leftSquare;
+                return true;
             if (SDL_HasIntersection(rect, &rightSquare))
-                toReturn ~= rightSquare;
+                return true;
             leftSquare.y += TILE_SIZE;
             rightSquare.y += TILE_SIZE;
         }
@@ -156,13 +149,13 @@ class TilemapCollider : IComponent {
         SDL_Rect bottomSquare = SDL_Rect(0, SCREEN_Y, TILE_SIZE, TILE_SIZE);
         foreach (i; 0 .. width) {
             if (SDL_HasIntersection(rect, &topSquare))
-                toReturn ~= topSquare;
+                return true;
             if (SDL_HasIntersection(rect, &bottomSquare))
-                toReturn ~= bottomSquare;
+                return true;
             topSquare.x += TILE_SIZE;
             bottomSquare.x += TILE_SIZE;
         }
 
-        return toReturn;
+        return false;
     }
 }

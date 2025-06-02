@@ -37,6 +37,7 @@ class Camera {
 /// Represents a scene containing game objects, a tilemap, and associated state.
 class Scene {
     GameObject[] gameObjects; // Don't use a scene tree bc that's complicated
+    ColliderComponent[] solids; // For collision detection
     GameObject player;
     GameState mGameState;
     Camera camera;
@@ -76,6 +77,8 @@ class Scene {
         collider.rect.h = (TILE_SIZE * 5) / 8;
         collider.offset.x = 0;
         collider.offset.y = (TILE_SIZE * 3) / 8;
+        collider.solids = &solids; // Set the pointer to the dynamic array of solids
+        collider.tilemap = &tilemap;
 
         auto input = new InputComponent(player);
         player.AddComponent!(ComponentType.INPUT)(input);
@@ -99,6 +102,8 @@ class Scene {
 
         collider.rect.w = TILE_SIZE;
         collider.rect.h = TILE_SIZE; // be generous
+        collider.solids = &solids; // Set the pointer to the dynamic array of solids
+        collider.tilemap = &tilemap;
 
         return apple;
     }
@@ -117,6 +122,8 @@ class Scene {
         if (up) {
             collider.offset.y = TILE_SIZE / 2;
         }
+        collider.solids = &solids; // Set the pointer to the dynamic array of solids
+        collider.tilemap = &tilemap;
 
         return spike;
     }
@@ -224,12 +231,6 @@ class Scene {
         foreach (obj; gameObjects) {
             obj.Update();
         }
-
-        auto collider = cast(ColliderComponent) player.GetComponent(
-            ComponentType.COLLIDER);
-
-        if (collider !is null)
-            collider.CheckCollisions(gameObjects);
 
         // Check deaths
         for (auto i = gameObjects.length; i > 0; i -= 1) {
