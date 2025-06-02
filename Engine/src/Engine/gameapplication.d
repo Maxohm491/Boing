@@ -1,7 +1,7 @@
-module GameCode.gameapplication;
+module Engine.gameapplication;
 import bindbc.sdl;
-import GameCode.scene;
-import engine;
+import Engine.scene;
+import app;
 import std.algorithm;
 import std.stdio;
 

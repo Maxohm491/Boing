@@ -1,7 +1,7 @@
 module LevelEditor.editor;
 
 import constants;
-import engine;
+import app;
 import bindbc.sdl;
 import std.stdio;
 import LevelEditor.UI;

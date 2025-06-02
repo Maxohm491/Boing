@@ -1,12 +1,11 @@
-module GameCode.scene;
+module Engine.scene;
 
-import GameCode.component;
-import GameCode.tilemapcomponents;
+import Engine.component;
+import Engine.tilemapcomponents;
 import std.algorithm;
-import GameCode.gameobject;
-import GameCode.gameapplication;
-import GameCode.scripts.player;
-import GameCode.scripts.shooter;
+import Engine.gameobject;
+import Engine.gameapplication;
+import scripts;
 import constants;
 import bindbc.sdl;
 import std.json;
@@ -26,27 +25,12 @@ struct GameState {
 }
 
 class Camera {
-    mat3 positionMat;
-    float scaleX = 1.0f;
-    float scaleY = 1.0f;
-    float posX = 0.0f;
-    float posY = 0.0f;
+    SDL_Point pos;
+    alias pos this;
 
-    void PositionCamera(float x, float y) {
-        posX = x;
-        posY = y;
-        updateMatrix();
-    }
-
-    void ScaleCamera(float x, float y) {
-        scaleX = x;
-        scaleY = y;
-        updateMatrix();
-    }
-
-    void updateMatrix() {
-        // Scale, then translate
-        positionMat = MakeScale(scaleX, scaleY) * MakeTranslate(posX, posY);
+    void PositionCamera(int x, int y) {
+        pos.x = x;
+        pos.y = y;
     }
 }
 
@@ -162,7 +146,6 @@ class Scene {
     void LoadSceneFromJson(string filename) {
         camera = new Camera();
         camera.PositionCamera(0, 0);
-        camera.ScaleCamera(1, 1); // TODO: scaling does not quite work with pixel aligment. put pixel size in scenedata.
 
         tilemap = GameObjectFactory!(ComponentType.TRANSFORM, ComponentType.TEXTURE,
             ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
@@ -264,7 +247,6 @@ class Scene {
     void Render() {
         auto playerTransform = cast(TransformComponent) player.GetComponent(
             ComponentType.TRANSFORM);
-        Vec2f xy = playerTransform.mWorldMatrix.Frommat3GetTranslation();
         // camera.PositionCamera(-xy.x + (SCREEN_X / 2) - TILE_SIZE, -xy.y + (SCREEN_Y / 2) - TILE_SIZE); // center on player
 
         // Set each objects local pos based on camera
@@ -272,7 +254,7 @@ class Scene {
             auto transform = cast(TransformComponent) obj.GetComponent(
                 ComponentType.TRANSFORM);
             if (transform !is null) {
-                transform.mScreenMatrix = camera.positionMat * transform.mWorldMatrix;
+                transform.UpdateScreenPos(camera.pos);
             }
         }
         foreach (obj; gameObjects) {

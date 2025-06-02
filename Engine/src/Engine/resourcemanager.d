@@ -1,5 +1,5 @@
 // Sourced with modifications from 08_gameobject/singleton.d
-module GameCode.resourcemanager;
+module Engine.resourcemanager;
 
 import bindbc.sdl;
 import std.string;

@@ -1,5 +1,5 @@
 // Sourced with modifications from the class github at 06_gameobject/full_component/gameobject.d
-module GameCode.gameobject;
+module Engine.gameobject;
 
 import core.atomic;
 import std.stdio;
@@ -7,9 +7,9 @@ import std.conv;
 
 import bindbc.sdl;
 
-import GameCode.scripts.script;
-import GameCode.component;
-import GameCode.tilemapcomponents;
+import scripts;
+import Engine.component;
+import Engine.tilemapcomponents;
 
 class GameObject
 {

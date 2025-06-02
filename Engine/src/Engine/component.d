@@ -1,14 +1,14 @@
 // Sourced with modifications from the class github at 06_gameobject/full_component/component.d
-module GameCode.component;
+module Engine.component;
 
 import std.stdio;
-import GameCode.scene;
+import Engine.scene;
 import std.algorithm;
 import std.array;
 import std.json;
 import bindbc.sdl;
-import GameCode.gameobject;
-import GameCode.resourcemanager;
+import Engine.gameobject;
+import Engine.resourcemanager;
 import std.math;
 import constants;
 import linear;
@@ -54,11 +54,8 @@ class ColliderComponent : IComponent {
 	}
 
 	void Update() {
-		// Round posittion to a pixel
-		// 8 pixels/tile
-		float pixelWidth = (cast(float) SCREEN_X / cast(float) GRID_X) / 8f;
-		rect.x = cast(int)(round(mTransformRef.x / pixelWidth) * pixelWidth) + offset.x;
-		rect.y = cast(int)(round(mTransformRef.y / pixelWidth) * pixelWidth) + offset.y;
+		rect.x = mTransformRef.worldPos.x + offset.x;
+		rect.y = mTransformRef.worldPos.y + offset.y;
 	}
 
 	// Recursively check all collidables
@@ -156,15 +153,10 @@ class SpriteComponent : IComponent {
 	}
 
 	void Render() {
-		// Round posittion to a pixel
-		// 8 pixels/tile
-		Vec2f screenPos = mTransformRef.GetScreenPos();
+		SDL_Point screenPos = mTransformRef.GetScreenPos();
 		SDL_Rect drawRect = SDL_Rect(0, 0, 0, 0);
-		drawRect.x = cast(int)(round(screenPos.x / PIXEL_WIDTH) * PIXEL_WIDTH);
-		drawRect.y = cast(int)(round(screenPos.y / PIXEL_WIDTH) * PIXEL_WIDTH);
-		drawRect.w = cast(int)(round((mTransformRef.GetScreenScale().x * mRect.w) / PIXEL_WIDTH) * PIXEL_WIDTH);
-		drawRect.h = cast(int)(round((mTransformRef.GetScreenScale().y * mRect.w) / PIXEL_WIDTH) * PIXEL_WIDTH);
-
+		drawRect.x = screenPos.x;
+		drawRect.y = screenPos.y;
 
 		if (mFrames.length > 0) {
 			Frame frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
@@ -176,6 +168,9 @@ class SpriteComponent : IComponent {
 					.length;
 				frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
 			}
+
+			drawRect.w = frame.mRect.w;
+			drawRect.h = frame.mRect.h;
 
 			SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(drawRect), 0, null,
 				flipped ? SDL_RendererFlip.SDL_FLIP_HORIZONTAL : SDL_RendererFlip
@@ -241,44 +236,25 @@ class TransformComponent : IComponent {
 		mOwner = owner;
 	}
 
-	@property float x() {
-        return mWorldMatrix.e[0][2];
-    }
-
-	@property float y() {
-        return mWorldMatrix.e[1][2];
-    }
-
-	@property void x(float value) {
-        mWorldMatrix.e[0][2] = value;
-    }
-
-	@property void y(float value) {
-        mWorldMatrix.e[1][2] = value;
-    }
-
-	void Translate(float x, float y) {
-		mWorldMatrix = mWorldMatrix * MakeTranslate(x, y);
+	void Translate(int x, int y) {
+		worldPos.x += x;
+		worldPos.y += y;
 	}
 
-	void SetPos(float x, float y) {
-		mWorldMatrix = MakeTranslate(x, y);
+	void SetPos(int x, int y) {
+		worldPos.x = x;
+		worldPos.y = y;	
 	}
 
-	// Note scale is only for visual effects
-	void Scale(float x, float y)
-	{
-		mWorldMatrix = mWorldMatrix * MakeScale(x, y);
+	void UpdateScreenPos(SDL_Point cameraPos) {
+		screenPos.x = worldPos.x - cameraPos.x;
+		screenPos.y = worldPos.y - cameraPos.y;
 	}
 
-	Vec2f GetScreenScale() {
-		return mScreenMatrix.Frommat3GetScale();
+	SDL_Point GetScreenPos() {
+		return screenPos;
 	}
 
-	Vec2f GetScreenPos() {
-		return mScreenMatrix.Frommat3GetTranslation();
-	}
-
-	mat3 mScreenMatrix;
-	mat3 mWorldMatrix;
+	SDL_Point screenPos; 
+	SDL_Point worldPos; 
 }

@@ -1,4 +1,4 @@
-module Engine.src.sdl_abstraction;
+module src.sdl_abstraction;
 
 // From pset 04
 

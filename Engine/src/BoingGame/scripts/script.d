@@ -1,7 +1,7 @@
-module GameCode.scripts.script;
+module scripts.script;
 
-import GameCode.component;
-import GameCode.gameobject;
+import Engine.component;
+import Engine.gameobject;
 
 // In my version we're just doing one script per game object 
 class ScriptComponent : IComponent {

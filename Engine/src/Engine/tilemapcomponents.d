@@ -1,7 +1,7 @@
-module GameCode.tilemapcomponents;
+module Engine.tilemapcomponents;
 
-import GameCode.component;
-import GameCode.gameobject;
+import Engine.component;
+import Engine.gameobject;
 import std.algorithm;
 import bindbc.sdl;
 import std.json;
@@ -65,23 +65,21 @@ class TilemapSprite : IComponent {
 
     /// Renders the full tilemap to the screen.
     void Render() {
-        int screenTileSizeX = cast(int)(TILE_SIZE * mTransformRef.GetScreenScale().x);
-        int screenTileSizeY = cast(int)(TILE_SIZE * mTransformRef.GetScreenScale().y);
-        Vec2f screenPos = mTransformRef.GetScreenPos();
+        SDL_Point screenPos = mTransformRef.GetScreenPos();
 
         SDL_Rect square = SDL_Rect(
-            cast(int)(round(screenPos.x / PIXEL_WIDTH) * PIXEL_WIDTH),
-            cast(int)(round(screenPos.y / PIXEL_WIDTH) * PIXEL_WIDTH),
-            screenTileSizeX,
-            screenTileSizeY);
+            screenPos.x,
+            screenPos.y,
+            TILE_SIZE,
+            TILE_SIZE);
 
         foreach (i; 0 .. height) {
             foreach (j; 0 .. width) {
                 RenderTile(tiles[j][i], &square);
-                square.x += screenTileSizeX;
+                square.x += TILE_SIZE;
             }
-            square.x = cast(int) screenPos.x;
-            square.y += screenTileSizeY;
+            square.x = screenPos.x;
+            square.y += TILE_SIZE;
         }
     }
 

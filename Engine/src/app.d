@@ -1,11 +1,11 @@
-module engine;
+module app;
 
 import std.stdio;
 import bindbc.sdl;
 import LevelEditor.editor;
-import GameCode.gameapplication;
+import Engine.gameapplication;
 import constants;
-import GameCode.resourcemanager;
+import Engine.resourcemanager;
 import core.memory;
 
 // Both gameapplcation and editor extend this

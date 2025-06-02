@@ -1,9 +1,9 @@
-module GameCode.scripts.shooter;
+module scripts.shooter;
 
-import GameCode.scripts.script;
-import GameCode.gameobject;
-import GameCode.component;
-import GameCode.tilemapcomponents;
+import scripts.script;
+import Engine.gameobject;
+import Engine.component;
+import Engine.tilemapcomponents;
 import constants;
 import bindbc.sdl;
 import constants;

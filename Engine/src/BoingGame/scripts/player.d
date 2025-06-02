@@ -1,9 +1,9 @@
-module GameCode.scripts.player;
+module scripts.player;
 
-import GameCode.component;
-import GameCode.tilemapcomponents;
-import GameCode.gameobject;
-import GameCode.scripts.script;
+import Engine.component;
+import Engine.tilemapcomponents;
+import Engine.gameobject;
+import scripts.script;
 import constants;
 import bindbc.sdl;
 import std.math;
