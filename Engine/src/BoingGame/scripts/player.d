@@ -43,40 +43,44 @@ class Player : ScriptComponent {
 
     override void Update() {
         HandleCollisions();
+        HandleGroundedAndJump();
+
+        // Horizontal movement and jump
         vel_x = runSpeed * mInputRef.GetDir();
         if (vel_x != 0)
             mSpriteRef.flipped = vel_x < 0;
 
+        if (!grounded)
+            vel_y -= gravity;
+
+        vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
+        writeln(vel_y);
+        actor.MoveX(vel_x, &OnSideCollision);
+        actor.MoveY(-vel_y, &OnVerticalCollision);
+        // MoveAndHandleWallCollisions();
+    }
+
+    void HandleGroundedAndJump() {
         if (grounded) {
             if (grounded && mInputRef.upPressed) {
                 vel_y = maxJumpSpeed;
                 grounded = false;
-            }
-            else if(!actor.IsOnGround) {
+            } else if (!actor.IsOnGround) {
                 // if we walk off a ledge this triggers
                 grounded = false;
-            }
-            else {
+            } else {
                 vel_y = 0; // Reset vertical velocity when grounded
             }
         }
 
         if (!mInputRef.upPressed // button now up
             && wasJumpPressed // but was down last frame
-            && vel_y > minJumpSpeed) // and still going upward
+            && vel_y > minJumpSpeed // and going upward
+            && !grounded) // and not grounded 
             {
-            vel_y = minJumpSpeed;
+            vel_y = minJumpSpeed; // then cap jump
         }
         wasJumpPressed = mInputRef.upPressed; // store for next frame
-
-        if (!grounded) {
-            vel_y -= gravity;
-        }
-        vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
-        writeln(vel_y);
-        actor.MoveX(vel_x, &OnSideCollision);
-        actor.MoveY(-vel_y, &OnVerticalCollision);
-        // MoveAndHandleWallCollisions();
     }
 
     void OnVerticalCollision() {
