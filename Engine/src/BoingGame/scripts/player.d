@@ -56,6 +56,7 @@ class Player : ScriptComponent {
     override void Update() {
         HandleCollisions();
         HandleJumpMotion();
+        HandleDashMotion();
 
         // Horizontal movement and jump
         vel_x = runSpeed * mInputRef.GetDir();
@@ -68,6 +69,9 @@ class Player : ScriptComponent {
         vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
         actor.MoveX(vel_x, &OnSideCollision);
         actor.MoveY(-vel_y, &OnVerticalCollision);
+    }
+
+    void HandleDashMotion() {
     }
 
     void HandleJumpMotion() {

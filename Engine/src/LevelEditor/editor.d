@@ -15,6 +15,18 @@ import std.file;
 import std.conv;
 import std.string;
 
+struct Camera {
+    SDL_Point pos; /// The position of the camera on the grid, in screen coordinates
+    alias pos this;
+    float zoom = 1.0f;
+
+    /// Positions the camera at the given coordinates.
+    void PositionCamera(int x, int y) {
+        pos.x = x;
+        pos.y = y;
+    }
+}
+
 // This will be the level editor/tilemap editor
 class Editor : Application {
     SDL_Renderer* mRendererRef;
@@ -27,8 +39,10 @@ class Editor : Application {
     Grid grid; /// The grid of tiles
 
     immutable int START_X = 364; /// The x-coord of the start of grid
-    immutable int END_Y = 686; /// The y-coord of the end of grid
+    immutable int END_Y = 512; /// The y-coord of the end of grid
     bool running = false; /// Whether the editor is currently running
+
+    Camera camera;
 
     /// Constructor: initializes the editor, its UI, and scene data.
     this(SDL_Renderer* r) {
@@ -47,7 +61,7 @@ class Editor : Application {
         tilemap = new Tilemap("./assets/images/tilemap.json", mRendererRef, tileTexture);
 
         // Initialize the editable tile grid
-        grid = new Grid(mRendererRef, START_X, END_Y, tilemap, &brush);
+        grid = new Grid(mRendererRef, START_X, END_Y, tilemap, &brush, &camera);
         grid.SetDimensions(GRID_X, GRID_Y);
         ui.AddButton(grid);
 

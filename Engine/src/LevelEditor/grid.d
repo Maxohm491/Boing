@@ -7,6 +7,7 @@ import constants;
 import std.stdio;
 import std.algorithm.comparison;
 import std.math;
+import LevelEditor.editor;
 
 /// Represents a grid of tiles in the level editor, used for placing and visualizing platform elements.
 /// Also supports start/end placement, spike/arrow autoplacement, and brush-driven editing.
@@ -19,9 +20,11 @@ class Grid : Button {
     int[][] tiles;
     int width, height;
     SDL_Renderer* mRendererRef;
+    Camera* camera;
+    SDL_Rect window; // The rectangle that represents what part of the grid is visible
 
     /// Constructs a Grid UI element given renderer, x-offset, tilemap, and brush reference.
-    this(SDL_Renderer* r, int x, int y, Tilemap tilemap, int* brush) {
+    this(SDL_Renderer* r, int x, int y, Tilemap tilemap, int* brush, Camera* camera) {
         mRendererRef = r;
         this.x = x;
         this.y = y;
@@ -30,20 +33,21 @@ class Grid : Button {
         onClick = &Clicked;
         onDragOver = &Clicked;
         rect = SDL_Rect(x, 0, SCREEN_X - x, y);
+        this.camera = camera;
+        window = SDL_Rect(0, 0, SCREEN_X - x, y);
     }
 
     void SetDimensions(int width, int height) {
         this.width = width;
         this.height = height;
-        float size_x = (SCREEN_X - x) / cast(float)width;
-        float size_y = y / cast(float)height;
-        writeln("size_x: ", size_x, " size_y: ", size_y);
-        this.square_size = cast(int)round(min(size_x, size_y));
+        RecalculateSquareSize();
+    }
 
-        // size tiles
-        // tiles.length = width;
-        // foreach (i, ref row; tiles)
-        //     row.length = height;
+    void RecalculateSquareSize() {
+        float size_x = camera.zoom * ((SCREEN_X - x) / cast(float) width);
+        float size_y = camera.zoom * (y / cast(float) height);
+        writeln("size_x: ", size_x, " size_y: ", size_y);
+        this.square_size = cast(int) round(min(size_x, size_y));
     }
 
     /// Handles mouse clicks or drag events, updating tile values using current brush.
@@ -210,13 +214,35 @@ class Grid : Button {
 
     /// Renders the tile grid and its UI representation.
     override void Render() {
-        SDL_Rect square = SDL_Rect(x, 0, square_size, square_size);
+        // SDL_Rect square = SDL_Rect(x, 0, square_size, square_size);
+        // foreach (i; 0 .. height) {
+        //     foreach (j; 0 .. width) {
+
+        //         SDL_Rect screenPose = SDL_Rect(square.x - camera.x, square.y - camera.y, square_size, square_size);
+
+        //         mTilemap.RenderTile(tiles[j][i], &square);
+        //         square.x += square_size;
+        //     }
+        //     square.x = x;
+        //     square.y += square_size;
+        // }
+
+        SDL_Rect square = SDL_Rect(0, 0, square_size, square_size);
         foreach (i; 0 .. height) {
             foreach (j; 0 .. width) {
-                mTilemap.RenderTile(tiles[j][i], &square);
+                SDL_Rect screenPos = SDL_Rect(cast(int) ((square.x - camera.x) * camera.zoom), cast(
+                        int) ((square.y - camera.y) * camera.zoom), square_size, square_size);
+
+                // If would be visible
+                if (screenPos.x + square_size <= window.w && screenPos.x >= window.x &&
+                    screenPos.y + square_size <= window.h && screenPos.y >= window.y) {
+                    screenPos.x += x;
+                    mTilemap.RenderTile(tiles[j][i], &screenPos);
+                }
+
                 square.x += square_size;
             }
-            square.x = x;
+            square.x = 0;
             square.y += square_size;
         }
 

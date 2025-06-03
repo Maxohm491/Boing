@@ -214,6 +214,7 @@ class InputComponent : IComponent {
 	bool leftPressed = false;
 	bool rightPressed = false;
 	bool upPressed = false;
+	bool downPressed = false;
 
 	this(GameObject owner) {
 		mOwner = owner;
