@@ -12,6 +12,14 @@ import std.algorithm;
 import physics;
 
 class Player : ScriptComponent {
+    enum PlayerState {
+        JUMPING,
+        FREEFALL,
+        GROUNDED,
+        COYOTE
+    }
+
+    PlayerState state = PlayerState.FREEFALL;
     GameObject mOwner;
     TransformComponent mTransformRef;
     ColliderComponent mColliderRef;
@@ -26,6 +34,10 @@ class Player : ScriptComponent {
     float gravity = 0.075;
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
+    int jumpBufferCounter = -1; // Used to buffer jumps
+    int bufferFrames = 5; // How many frames we can buffer a jump
+    int coyoteTime = 0; // Used to allow jumps after leaving the ground
+    int coyoteFrames = 5; // How many frames we can jump after leaving the ground
     bool wasJumpPressed = false;
     bool grounded = false;
 
@@ -43,44 +55,86 @@ class Player : ScriptComponent {
 
     override void Update() {
         HandleCollisions();
-        HandleGroundedAndJump();
+        HandleJumpMotion();
 
         // Horizontal movement and jump
         vel_x = runSpeed * mInputRef.GetDir();
         if (vel_x != 0)
             mSpriteRef.flipped = vel_x < 0;
 
-        if (!grounded)
+        if (state != PlayerState.GROUNDED)
             vel_y -= gravity;
 
         vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
-        writeln(vel_y);
         actor.MoveX(vel_x, &OnSideCollision);
         actor.MoveY(-vel_y, &OnVerticalCollision);
-        // MoveAndHandleWallCollisions();
     }
 
-    void HandleGroundedAndJump() {
-        if (grounded) {
-            if (grounded && mInputRef.upPressed) {
-                vel_y = maxJumpSpeed;
-                grounded = false;
-            } else if (!actor.IsOnGround) {
+    void HandleJumpMotion() {
+        // Switch between states
+        switch (state) {
+        case PlayerState.JUMPING:
+            if (!mInputRef.upPressed // button now up
+                && vel_y > minJumpSpeed) { // and going upward
+                vel_y = minJumpSpeed; // stop jump
+                state = PlayerState.FREEFALL;
+            }
+            else if(vel_y < minJumpSpeed) {
+                state = PlayerState.FREEFALL;
+            }
+            break;
+        case PlayerState.FREEFALL:
+            jumpBufferCounter--;
+            break;
+        case PlayerState.GROUNDED:
+            if (!actor.IsOnGround) {
                 // if we walk off a ledge this triggers
-                grounded = false;
+                state = PlayerState.COYOTE;
+                coyoteTime = 0;
             } else {
                 vel_y = 0; // Reset vertical velocity when grounded
             }
+            break;
+        case PlayerState.COYOTE:
+            jumpBufferCounter--;
+            coyoteTime++;
+            if (coyoteTime > 5) {
+                state = PlayerState.FREEFALL;
+            }
+            break;
+        default:
+            assert(0, "Unknown player state");
         }
 
-        if (!mInputRef.upPressed // button now up
-            && wasJumpPressed // but was down last frame
-            && vel_y > minJumpSpeed // and going upward
-            && !grounded) // and not grounded 
-            {
-            vel_y = minJumpSpeed; // then cap jump
+        // Actually detect jump
+        if (mInputRef.upPressed && !wasJumpPressed) {
+            if (state == PlayerState.GROUNDED || state == PlayerState.COYOTE)
+                DoJump();
+            else if (state == PlayerState.FREEFALL)
+                jumpBufferCounter = bufferFrames;
         }
+
         wasJumpPressed = mInputRef.upPressed; // store for next frame
+    }
+
+    void DoJump() {
+        jumpBufferCounter = -1;
+        vel_y = maxJumpSpeed;
+        state = PlayerState.JUMPING;
+    }
+
+    void BecomeGrounded() {
+        if (state == PlayerState.GROUNDED)
+            return;
+
+        state = PlayerState.GROUNDED;
+        vel_y = 0; // Reset vertical velocity
+
+        // Check for buffered jump
+        if (jumpBufferCounter >= 0) {
+            jumpBufferCounter = -1; // Reset jump buffer
+            DoJump();
+        }
     }
 
     void OnVerticalCollision() {
@@ -89,14 +143,12 @@ class Player : ScriptComponent {
             vel_y = 0;
         } else // going down
         {
-            vel_y = 0;
-            grounded = true;
+            BecomeGrounded();
         }
     }
 
     void OnSideCollision() {
         vel_x = 0;
-        writeln("COLLISION");
     }
 
     void HandleCollisions() {
@@ -111,97 +163,4 @@ class Player : ScriptComponent {
         //     }
         // }
     }
-
-    // void MoveAndHandleWallCollisions()
-    // {
-    //     // Calculate new pos, decide if it would go into a new rect, and adjust accordingly
-    //     SDL_Rect newColliderPos = SDL_Rect(cast(int)(round(
-    //             (mTransformRef.x + vel_x) / PIXEL_WIDTH) * PIXEL_WIDTH) + mColliderRef.offset.x,
-    //         cast(int)(round((mTransformRef.y - vel_y) / PIXEL_WIDTH) * PIXEL_WIDTH) + mColliderRef.offset.y, mColliderRef
-    //             .rect.w, mColliderRef.rect.h);
-
-    //     auto colls = mTilemap.GetWallCollisions(&newColliderPos);
-
-    //     if (colls.length == 0) // 0 — clear, just move
-    //     {
-    //         mTransformRef.Translate(vel_x, -vel_y);
-    //         grounded = false;
-    //         return;
-    //     }
-
-    //     // If two straight
-    //     if (colls.length == 1 || (colls.length == 2 && (colls[0].x == colls[1].x || colls[0].y == colls[1].y)))
-    //     {
-    //         SDL_Rect bb = colls[0];
-    //         foreach (c; colls[1 .. $])
-    //         {
-    //             int x1 = min(bb.x, c.x);
-    //             int y1 = min(bb.y, c.y);
-    //             int x2 = max(bb.x + bb.w, c.x + c.w);
-    //             int y2 = max(bb.y + bb.h, c.y + c.h);
-    //             bb = SDL_Rect(x1, y1, x2 - x1, y2 - y1);
-    //         }
-
-    //         SDL_Rect overlap;
-    //         SDL_IntersectRect(&newColliderPos, &bb, &overlap);
-
-    //         if (overlap.w < overlap.h) // wall
-    //         {
-    //             if (overlap.x > newColliderPos.x) // right wall
-    //                 mTransformRef.x = bb.x - TILE_SIZE;
-    //             else //left wall
-    //                 mTransformRef.x = bb.x + TILE_SIZE;
-    //             vel_x = 0;
-    //         }
-    //         else // floor/ceiling
-    //         {
-    //             if (overlap.y == newColliderPos.y) // ceiling
-    //                 mTransformRef.y = bb.y + TILE_SIZE - mColliderRef.offset.y;
-    //             else // floor
-    //             {
-    //                 mTransformRef.y = bb.y - TILE_SIZE;
-    //                 grounded = true;
-    //             }
-    //             vel_y = 0;
-    //         }
-    //     }
-
-    //     else // corner
-    //     {
-    //         // this is jank but make one big box and do math
-    //         SDL_Rect bb = colls[0];
-    //         foreach (c; colls[1 .. $])
-    //         {
-    //             int x1 = min(bb.x, c.x);
-    //             int y1 = min(bb.y, c.y);
-    //             int x2 = max(bb.x + bb.w, c.x + c.w);
-    //             int y2 = max(bb.y + bb.h, c.y + c.h);
-    //             bb = SDL_Rect(x1, y1, x2 - x1, y2 - y1);
-    //         }
-
-    //         // SDL_Rect overlap;
-    //         // SDL_IntersectRect(&newColliderPos, &bb, &overlap);
-    //         if (vel_x < 0) // left wall
-    //             mTransformRef.x = bb.x + TILE_SIZE;
-    //         else // right wall
-    //             mTransformRef.x = bb.x;
-
-    //         if (vel_y > 0) // ceiling
-    //             mTransformRef.y = bb.y + TILE_SIZE - mColliderRef.offset.y;
-    //         else // floor
-    //         {
-    //             mTransformRef.y = bb.y;
-    //             grounded = true;
-    //         }
-
-    //         vel_x = 0;
-    //         vel_y = 0;
-    //     }
-
-    //     mTransformRef.Translate(vel_x, -vel_y);
-    //     if (vel_y != 0)
-    //     {
-    //         grounded = false;
-    //     }
-    // }
 }
