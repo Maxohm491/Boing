@@ -117,7 +117,7 @@ class TilemapCollider : IComponent {
 
     // Return true iff the given rectangle collides with any solid tile in the tilemap.
     bool CheckRect(SDL_Rect* rect) {
-        SDL_Rect square = SDL_Rect(0, 0, TILE_SIZE, TILE_SIZE);
+        SDL_Rect square = SDL_Rect(0, 0, PIXELS_PER_TILE, PIXELS_PER_TILE);
 
         foreach (i; 0 .. height) {
             foreach (j; 0 .. width) {
@@ -126,34 +126,34 @@ class TilemapCollider : IComponent {
                     return true; // Return true immediately if any wall is hit
                 }
 
-                square.x += TILE_SIZE;
+                square.x += PIXELS_PER_TILE;
             }
             square.x = 0;
-            square.y += TILE_SIZE;
+            square.y += PIXELS_PER_TILE;
         }
 
         // Check side edges
-        SDL_Rect leftSquare = SDL_Rect(-TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
-        SDL_Rect rightSquare = SDL_Rect(SCREEN_X, 0, TILE_SIZE, TILE_SIZE);
+        SDL_Rect leftSquare = SDL_Rect(-PIXELS_PER_TILE, 0, PIXELS_PER_TILE, PIXELS_PER_TILE);
+        SDL_Rect rightSquare = SDL_Rect(GRID_X * PIXELS_PER_TILE, 0, PIXELS_PER_TILE, PIXELS_PER_TILE);
         foreach (i; 0 .. height) {
             if (SDL_HasIntersection(rect, &leftSquare))
                 return true;
             if (SDL_HasIntersection(rect, &rightSquare))
                 return true;
-            leftSquare.y += TILE_SIZE;
-            rightSquare.y += TILE_SIZE;
+            leftSquare.y += PIXELS_PER_TILE;
+            rightSquare.y += PIXELS_PER_TILE;
         }
 
         // Check top and bottom edges
-        SDL_Rect topSquare = SDL_Rect(0, -TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        SDL_Rect bottomSquare = SDL_Rect(0, SCREEN_Y, TILE_SIZE, TILE_SIZE);
+        SDL_Rect topSquare = SDL_Rect(0, -PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE);
+        SDL_Rect bottomSquare = SDL_Rect(0, GRID_Y * PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE);
         foreach (i; 0 .. width) {
             if (SDL_HasIntersection(rect, &topSquare))
                 return true;
             if (SDL_HasIntersection(rect, &bottomSquare))
                 return true;
-            topSquare.x += TILE_SIZE;
-            bottomSquare.x += TILE_SIZE;
+            topSquare.x += PIXELS_PER_TILE;
+            bottomSquare.x += PIXELS_PER_TILE;
         }
 
         return false;

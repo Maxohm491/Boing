@@ -4,32 +4,39 @@ import std.math;
 import Engine.component;
 import bindbc.sdl;
 import std.conv;
+import std.stdio;
 
 class Actor {
     float xRemainder = 0.0f;
     float yRemainder = 0.0f;
     TransformComponent transform;
-    ColliderComponent collider; 
+    ColliderComponent collider;
 
-    public void MoveX(float amount, void delegate() onCollide) {
+    this(TransformComponent transform, ColliderComponent collider) {
+        this.transform = transform;
+        this.collider = collider;
+    }
+
+    void MoveX(float amount, void delegate() onCollide) {
         xRemainder += amount;
         int move = cast(int) floor(xRemainder);
         if (move != 0) {
+
             xRemainder -= move;
             int sign = sgn(move);
             while (move != 0) {
 
                 transform.x += sign;
-                // TODO: move collider too
-                if (collider.CollidesWithSolid()) { 
+                collider.rect.x += sign; // Adjust the collider  too
+                if (collider.CollidesWithSolid()) {
                     // Hit a solid!
                     // Undo the move
                     transform.x -= sign;
+                    collider.rect.x -= sign;
                     xRemainder = 0.0f;
 
                     if (onCollide != null)
                         onCollide();
-                    
 
                     break;
                 }
@@ -38,7 +45,7 @@ class Actor {
         }
     }
 
-    public void MoveY(float amount, void delegate() onCollide) {
+    void MoveY(float amount, void delegate() onCollide) {
         yRemainder += amount;
         int move = cast(int) floor(yRemainder);
         if (move != 0) {
@@ -46,15 +53,16 @@ class Actor {
             int sign = sgn(move);
             while (move != 0) {
                 transform.y += sign;
-                if (collider.CollidesWithSolid()) { 
+                collider.rect.y += sign; // Adjust the collider  too
+                if (collider.CollidesWithSolid()) {
                     // Hit a solid!
                     // Undo the move
                     transform.y -= sign;
+                    collider.rect.y -= sign;
                     yRemainder = 0.0f;
 
                     if (onCollide != null)
                         onCollide();
-                    
 
                     break;
                 }
@@ -62,4 +70,18 @@ class Actor {
             }
         }
     }
+
+    // Returns whether the actor is one pixel above a solid
+    bool IsOnGround() {
+        transform.y += 1;
+        collider.rect.y += 1; // Adjust the collider too
+        bool result = collider.CollidesWithSolid();
+
+        // Undo the move
+        transform.y -= 1;
+        collider.rect.y -= 1;
+
+        return result;
+    }
 }
+

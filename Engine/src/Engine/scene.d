@@ -70,13 +70,11 @@ class Scene {
         sprite.LoadMetaData("./assets/images/character.json");
 
         sprite.mRendererRef = mRendererRef;
-        sprite.mRect.w = TILE_SIZE;
-        sprite.mRect.h = TILE_SIZE;
 
-        collider.rect.w = TILE_SIZE;
-        collider.rect.h = (TILE_SIZE * 5) / 8;
+        collider.rect.w = PIXELS_PER_TILE;
+        collider.rect.h = (PIXELS_PER_TILE * 5) / 8;
         collider.offset.x = 0;
-        collider.offset.y = (TILE_SIZE * 3) / 8;
+        collider.offset.y = (PIXELS_PER_TILE * 3) / 8;
         collider.solids = &solids; // Set the pointer to the dynamic array of solids
         collider.tilemap = &tilemap;
 
@@ -100,8 +98,8 @@ class Scene {
 
         transform.SetPos(location.x, location.y);
 
-        collider.rect.w = TILE_SIZE;
-        collider.rect.h = TILE_SIZE; // be generous
+        collider.rect.w = PIXELS_PER_TILE;
+        collider.rect.h = PIXELS_PER_TILE; // be generous
         collider.solids = &solids; // Set the pointer to the dynamic array of solids
         collider.tilemap = &tilemap;
 
@@ -117,10 +115,10 @@ class Scene {
 
         transform.SetPos(location.x, location.y);
 
-        collider.rect.w = TILE_SIZE;
-        collider.rect.h = TILE_SIZE / 2; // be generous
+        collider.rect.w = PIXELS_PER_TILE;
+        collider.rect.h = PIXELS_PER_TILE / 2; // be generous
         if (up) {
-            collider.offset.y = TILE_SIZE / 2;
+            collider.offset.y = PIXELS_PER_TILE / 2;
         }
         collider.solids = &solids; // Set the pointer to the dynamic array of solids
         collider.tilemap = &tilemap;
@@ -175,25 +173,25 @@ class Scene {
                 int value = cell.get!int;
                 if (value == 19) // Start tile
                 {
-                    mSpawnPoint = SDL_Point(cast(int)(TILE_SIZE * y), cast(int)(TILE_SIZE * x));
+                    mSpawnPoint = SDL_Point(cast(int)(PIXELS_PER_TILE * y), cast(int)(PIXELS_PER_TILE * x));
                     value = 16;
                 } else if (value == 20) // End tile
                 {
                     value = 28; // apple
-                    AddGameObject(MakeApple(SDL_Point(cast(int)(TILE_SIZE * y), cast(int)(
-                            TILE_SIZE * x))));
+                    AddGameObject(MakeApple(SDL_Point(cast(int)(PIXELS_PER_TILE * y), cast(int)(
+                            PIXELS_PER_TILE * x))));
                 } else if (value == 17) // up spike
-                    AddGameObject(MakeSpike(SDL_Point(cast(int)(TILE_SIZE * y), cast(int)(
-                            TILE_SIZE * x)), true));
+                    AddGameObject(MakeSpike(SDL_Point(cast(int)(PIXELS_PER_TILE * y), cast(int)(
+                            PIXELS_PER_TILE * x)), true));
                 else if (value == 23) // down spike
-                    AddGameObject(MakeSpike(SDL_Point(cast(int)(TILE_SIZE * y), cast(int)(
-                            TILE_SIZE * x)), false));
+                    AddGameObject(MakeSpike(SDL_Point(cast(int)(PIXELS_PER_TILE * y), cast(int)(
+                            PIXELS_PER_TILE * x)), false));
                 else if (value == 18) // left shooter 
-                    AddGameObject(MakeShooter(SDL_Point(cast(int)(TILE_SIZE * y), cast(int)(
-                            TILE_SIZE * x)), false));
+                    AddGameObject(MakeShooter(SDL_Point(cast(int)(PIXELS_PER_TILE * y), cast(int)(
+                            PIXELS_PER_TILE * x)), false));
                 else if (value == 26) // right shooter 
-                    AddGameObject(MakeShooter(SDL_Point(cast(int)(TILE_SIZE * y), cast(int)(
-                            TILE_SIZE * x)), true));
+                    AddGameObject(MakeShooter(SDL_Point(cast(int)(PIXELS_PER_TILE * y), cast(int)(
+                            PIXELS_PER_TILE * x)), true));
                 buf[y][x++] = value;
             }
             y++;

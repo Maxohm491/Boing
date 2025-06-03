@@ -1,4 +1,4 @@
 module physics;
 
-import physics.actor;
-import physics.solid;
+public import physics.actor;
+public import physics.solid;

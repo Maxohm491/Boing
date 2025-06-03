@@ -73,7 +73,7 @@ class ColliderComponent : IComponent {
 			assert(0, "Tilemap not found");
 		}
 
-		if(tilemapCollider.CheckRect(rect).length) {
+		if(tilemapCollider.CheckRect(&rect)) {
 			return true;
 		}
         if (solids is null) return false;
@@ -129,7 +129,6 @@ class SpriteComponent : IComponent {
 	size_t mCurrentFrameDuration = 0; // Frames since start of current animation
 	size_t mCurrentFrameIndex = 0; // Index into mFrameNumbers[mCurrentAnimationName]
 
-	SDL_Rect mRect;
 	bool flipped = false;
 
 	/// Hold a copy of the texture that is referenced
@@ -196,8 +195,8 @@ class SpriteComponent : IComponent {
 				frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
 			}
 
-			drawRect.w = frame.mRect.w;
-			drawRect.h = frame.mRect.h;
+			drawRect.w = cast(int) (frame.mRect.w * PIXEL_WIDTH);
+			drawRect.h = cast(int) (frame.mRect.h * PIXEL_WIDTH);
 
 			SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(drawRect), 0, null,
 				flipped ? SDL_RendererFlip.SDL_FLIP_HORIZONTAL : SDL_RendererFlip
@@ -259,6 +258,10 @@ class InputComponent : IComponent {
 }
 
 class TransformComponent : IComponent {
+	SDL_Point screenPos; 
+	SDL_Point worldPos; 
+	alias worldPos this;
+
 	this(GameObject owner) {
 		mOwner = owner;
 	}
@@ -274,14 +277,12 @@ class TransformComponent : IComponent {
 	}
 
 	void UpdateScreenPos(SDL_Point cameraPos) {
-		screenPos.x = worldPos.x - cameraPos.x;
-		screenPos.y = worldPos.y - cameraPos.y;
+		screenPos.x = cast(int) ((worldPos.x - cameraPos.x) * PIXEL_WIDTH);
+		screenPos.y = cast(int) ((worldPos.y - cameraPos.y) * PIXEL_WIDTH);
 	}
 
 	SDL_Point GetScreenPos() {
 		return screenPos;
 	}
 
-	SDL_Point screenPos; 
-	SDL_Point worldPos; 
 }
