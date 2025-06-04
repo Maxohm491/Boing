@@ -70,7 +70,6 @@ class Editor : Application {
 
         // Initialize the editable tile grid
         grid = new Grid(mRendererRef, START_X, END_Y, tilemap, &brush, &camera);
-        grid.SetDimensions(GRID_X, GRID_Y);
         ui.AddButton(grid);
 
         // Make brush buttons manually

@@ -16,7 +16,6 @@ import std.math;
 /// A component that renders a static tilemap background using a texture atlas.
 class TilemapSprite : IComponent {
     /// 2D array representing tile indices at each grid location.
-    // int[GRID_Y][GRID_X] tiles;
     int[][] tiles;
     int width;
     int height;
@@ -134,7 +133,7 @@ class TilemapCollider : IComponent {
 
         // Check side edges
         SDL_Rect leftSquare = SDL_Rect(-PIXELS_PER_TILE, 0, PIXELS_PER_TILE, PIXELS_PER_TILE);
-        SDL_Rect rightSquare = SDL_Rect(GRID_X * PIXELS_PER_TILE, 0, PIXELS_PER_TILE, PIXELS_PER_TILE);
+        SDL_Rect rightSquare = SDL_Rect(width * PIXELS_PER_TILE, 0, PIXELS_PER_TILE, PIXELS_PER_TILE);
         foreach (i; 0 .. height) {
             if (SDL_HasIntersection(rect, &leftSquare))
                 return true;
@@ -146,7 +145,7 @@ class TilemapCollider : IComponent {
 
         // Check top and bottom edges
         SDL_Rect topSquare = SDL_Rect(0, -PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE);
-        SDL_Rect bottomSquare = SDL_Rect(0, GRID_Y * PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE);
+        SDL_Rect bottomSquare = SDL_Rect(0, height * PIXELS_PER_TILE, PIXELS_PER_TILE, PIXELS_PER_TILE);
         foreach (i; 0 .. width) {
             if (SDL_HasIntersection(rect, &topSquare))
                 return true;

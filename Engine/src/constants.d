@@ -3,8 +3,10 @@ module constants;
 immutable int SCREEN_X = 1280; // screen pixels
 immutable int SCREEN_Y = 720; // screen pixels
 
-immutable int GRID_X = 40; // Number of grid squares (tiles) on screen at a time
-immutable int GRID_Y = 23;
+private immutable int GRID_X = 40; // Number of grid squares (tiles) on screen at a time 
+private immutable int GRID_Y = 23;
+// immutable int GRID_X = 80; // Number of grid squares (tiles) on screen at a time
+// immutable int GRID_Y = 45;
 
 immutable int PIXELS_PER_TILE = 8; // Pixels per tile
 
