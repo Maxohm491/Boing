@@ -230,6 +230,12 @@ class Scene {
             obj.Update();
         }
 
+        auto collider = cast(ColliderComponent) player.GetComponent(
+            ComponentType.COLLIDER);
+
+        if (collider !is null)
+            collider.CheckCollisions(gameObjects);
+
         // Check deaths
         for (auto i = gameObjects.length; i > 0; i -= 1) {
             if (!gameObjects[i - 1].alive) {

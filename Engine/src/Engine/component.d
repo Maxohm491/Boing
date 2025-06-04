@@ -63,51 +63,52 @@ class ColliderComponent : IComponent {
 	}
 
 	bool CollidesWithSolid() {
-		if(tilemapCollider is null && tilemap !is null) {
-			tilemapCollider = cast(TilemapCollider) tilemap.GetComponent(ComponentType.TILEMAP_COLLIDER);
-			if(tilemapCollider is null) {
+		if (tilemapCollider is null && tilemap !is null) {
+			tilemapCollider = cast(TilemapCollider) tilemap.GetComponent(
+				ComponentType.TILEMAP_COLLIDER);
+			if (tilemapCollider is null) {
 				assert(0, "Tilemap collider not found");
 			}
-		}
-		else if(tilemap is null) {
+		} else if (tilemap is null) {
 			assert(0, "Tilemap not found");
 		}
 
-		if(tilemapCollider.CheckRect(&rect)) {
+		if (tilemapCollider.CheckRect(&rect)) {
 			return true;
 		}
-        if (solids is null) return false;
-        foreach (solid; *solids) {
-            if (SDL_HasIntersection(&rect, &(solid.rect))) {
-                return true;
-            }
-        }
-        return false;
+		if (solids is null)
+			return false;
+		foreach (solid; *solids) {
+			if (SDL_HasIntersection(&rect, &(solid.rect))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// Recursively check all collidables
-	// string[] CheckCollisions(GameObject[] toCheck) {
-	// 	string[] toReturn;
-	// 	// check for actual intersection
-	// 	foreach (obj; toCheck) {
-	// 		auto collider = obj.GetComponent(ComponentType.COLLIDER);
-	// 		if (collider !is null) {
-	// 			if (obj.GetID() != mOwner.GetID() &&
-	// 				SDL_HasIntersection(&((cast(ColliderComponent) collider)
-	// 					.rect), &(rect))) {
-	// 				toReturn ~= obj.GetName();
-	// 			}
-	// 		}
-	// 	}
-	// 	mCollisions = toReturn;
+	string[] CheckCollisions(GameObject[] toCheck) {
+		string[] toReturn;
+		// check for actual intersection
+		foreach (obj; toCheck) {
+			auto collider = obj.GetComponent(ComponentType.COLLIDER);
+			if (collider !is null) {
+				if (obj.GetID() != mOwner.GetID() &&
+					SDL_HasIntersection(&((cast(ColliderComponent) collider)
+						.rect), &(rect))) {
+					toReturn ~= obj.GetName();
+				}
+			}
+		}
+		mCollisions = toReturn;
 
-	// 	return toReturn;
-	// }
+		return toReturn;
+	}
 
-	// /// Return names of gameobjects that the collider has collided with since last frame
-	// string[] GetCollisions() {
-	// 	return mCollisions;
-	// }
+	/// Return names of gameobjects that the collider has collided with since last frame
+	string[] GetCollisions() {
+		return mCollisions;
+	}
 }
 
 /// Store a series of frames and multiple animation sequences that can be played
@@ -195,15 +196,15 @@ class SpriteComponent : IComponent {
 				frame = mFrames[mFrameNumbers[mCurrentAnimationName][mCurrentFrameIndex]];
 			}
 
-			drawRect.w = cast(int) (frame.mRect.w * PIXEL_WIDTH);
-			drawRect.h = cast(int) (frame.mRect.h * PIXEL_WIDTH);
+			drawRect.w = cast(int)(frame.mRect.w * PIXEL_WIDTH);
+			drawRect.h = cast(int)(frame.mRect.h * PIXEL_WIDTH);
 
 			SDL_RenderCopyEx(mRendererRef, mTextureRef, &(frame.mRect), &(drawRect), 0, null,
 				flipped ? SDL_RendererFlip.SDL_FLIP_HORIZONTAL : SDL_RendererFlip
 					.SDL_FLIP_NONE);
 		} else {
-			SDL_RenderCopyEx(mRendererRef, mTextureRef, null, &(drawRect), 0, null, flipped ? SDL_RendererFlip.SDL_FLIP_HORIZONTAL
-					: SDL_RendererFlip
+			SDL_RenderCopyEx(mRendererRef, mTextureRef, null, &(drawRect), 0, null, flipped ? SDL_RendererFlip
+					.SDL_FLIP_HORIZONTAL : SDL_RendererFlip
 					.SDL_FLIP_NONE);
 		}
 	}
@@ -242,6 +243,8 @@ class InputComponent : IComponent {
 				rightPressed = true;
 			else if (key == SDLK_w || key == SDLK_UP || key == SDLK_SPACE)
 				upPressed = true;
+			else if (key == SDLK_s || key == SDLK_DOWN)
+				downPressed = true;
 			break;
 		case SDL_KEYUP:
 			auto key = event.key.keysym.sym;
@@ -251,6 +254,8 @@ class InputComponent : IComponent {
 				rightPressed = false;
 			else if (key == SDLK_w || key == SDLK_UP || key == SDLK_SPACE)
 				upPressed = false;
+			else if (key == SDLK_s || key == SDLK_DOWN)
+				downPressed = false;
 			break;
 		default:
 			break;
@@ -259,8 +264,8 @@ class InputComponent : IComponent {
 }
 
 class TransformComponent : IComponent {
-	SDL_Point screenPos; 
-	SDL_Point worldPos; 
+	SDL_Point screenPos;
+	SDL_Point worldPos;
 	alias worldPos this;
 
 	this(GameObject owner) {
@@ -274,12 +279,12 @@ class TransformComponent : IComponent {
 
 	void SetPos(int x, int y) {
 		worldPos.x = x;
-		worldPos.y = y;	
+		worldPos.y = y;
 	}
 
 	void UpdateScreenPos(SDL_Point cameraPos) {
-		screenPos.x = cast(int) ((worldPos.x - cameraPos.x) * PIXEL_WIDTH);
-		screenPos.y = cast(int) ((worldPos.y - cameraPos.y) * PIXEL_WIDTH);
+		screenPos.x = cast(int)((worldPos.x - cameraPos.x) * PIXEL_WIDTH);
+		screenPos.y = cast(int)((worldPos.y - cameraPos.y) * PIXEL_WIDTH);
 	}
 
 	SDL_Point GetScreenPos() {

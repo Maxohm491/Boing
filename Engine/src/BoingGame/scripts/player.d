@@ -16,7 +16,8 @@ class Player : ScriptComponent {
         JUMPING,
         FREEFALL,
         GROUNDED,
-        COYOTE
+        COYOTE,
+        DASHING
     }
 
     PlayerState state = PlayerState.FREEFALL;
@@ -25,13 +26,14 @@ class Player : ScriptComponent {
     ColliderComponent mColliderRef;
     Actor actor;
     SpriteComponent mSpriteRef;
-    InputComponent mInputRef;
+    InputComponent input;
     TilemapCollider mTilemap;
     float runSpeed = 0.7;
     float minJumpSpeed = 0.7;
     float maxJumpSpeed = 1.7; // To make a nice fun jump set max when they hit space and min when they let go
     float maxVertSpeed = 2.2;
-    float gravity = 0.075;
+    // float gravity = 0.075; // old jump gravity
+    float gravity = 0.1; // old jump gravity
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
     int jumpBufferCounter = -1; // Used to buffer jumps
@@ -41,12 +43,19 @@ class Player : ScriptComponent {
     bool wasJumpPressed = false;
     bool grounded = false;
 
+    float horiDashVelocityMax = 2; // max speeds from a dash
+    float vertDashVelocityMax = 2;
+    float diagDashVelocityMax = 1.4; // per direction
+    int dashLengthFrames = 7;
+    int dashCounter = 0; // How many frames we've been dashing
+    int dashFreezeFrames = 3;
+
     this(GameObject owner) {
         mOwner = owner;
 
         mTransformRef = cast(TransformComponent) owner.GetComponent(ComponentType.TRANSFORM);
         mColliderRef = cast(ColliderComponent) owner.GetComponent(ComponentType.COLLIDER);
-        mInputRef = cast(InputComponent) mOwner.GetComponent(ComponentType.INPUT);
+        input = cast(InputComponent) mOwner.GetComponent(ComponentType.INPUT);
         mSpriteRef = cast(SpriteComponent) mOwner.GetComponent(ComponentType.SPRITE);
         actor = new Actor(mTransformRef, mColliderRef);
 
@@ -55,15 +64,17 @@ class Player : ScriptComponent {
 
     override void Update() {
         HandleCollisions();
-        HandleJumpMotion();
+        // HandleJumpMotion();
         HandleDashMotion();
 
-        // Horizontal movement and jump
-        vel_x = runSpeed * mInputRef.GetDir();
-        if (vel_x != 0)
-            mSpriteRef.flipped = vel_x < 0;
+        // Horizontal movement
+        // vel_x = runSpeed * input.GetDir();
+        // if (vel_x != 0)
+        //     mSpriteRef.flipped = vel_x < 0;
 
-        if (state != PlayerState.GROUNDED)
+        // if (state != PlayerState.GROUNDED)
+        //     vel_y -= gravity;
+        if (state != PlayerState.DASHING)
             vel_y -= gravity;
 
         vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
@@ -72,18 +83,76 @@ class Player : ScriptComponent {
     }
 
     void HandleDashMotion() {
+        switch (state) {
+        case PlayerState.DASHING:
+            writeln("Dashing");
+            dashCounter++;
+            if (dashCounter > dashLengthFrames)
+                state = PlayerState.FREEFALL; // End dash
+            break;
+        default:
+            writeln("Not");
+            // I think this is nifty but maybe not the best way
+            int dashCode = 0;
+            if (input.leftPressed)
+                dashCode += 1;
+            if (input.rightPressed)
+                dashCode += 2;
+            if (input.upPressed)
+                dashCode += 4;
+            if (input.downPressed)
+                dashCode += 8;
+            switch (dashCode) {
+            case 0: // No dash
+                break;
+            case 1: // Left
+            case 13:
+                vel_x = min(-horiDashVelocityMax, vel_x);
+                vel_y = 0;
+                break;
+            case 2:
+            case 14:
+                vel_x = max(horiDashVelocityMax, vel_x);
+                vel_y = 0;
+                break;
+                break;
+            case 5: // Diagonal
+            case 6:
+            case 9:
+            case 10:
+                vel_x = (input.leftPressed ? min(-diagDashVelocityMax, vel_x) : max(diagDashVelocityMax, vel_x));
+                vel_y = (input.downPressed ? min(-diagDashVelocityMax, vel_y) : max(diagDashVelocityMax, vel_y));
+                break;
+            case 4: // Vertical
+            case 8:
+            case 7:
+            case 11:
+                writeln("vertical");
+                break;
+            default:
+                writeln("in place");
+                break;
+            }
+
+            if (dashCode != 0) {
+                state = PlayerState.DASHING;
+                dashCounter = 0;
+            }
+            break;
+        }
+
+        //maybe if contradictary input, dash "in place"
     }
 
     void HandleJumpMotion() {
         // Switch between states
         switch (state) {
         case PlayerState.JUMPING:
-            if (!mInputRef.upPressed // button now up
+            if (!input.upPressed // button now up
                 && vel_y > minJumpSpeed) { // and going upward
                 vel_y = minJumpSpeed; // stop jump
                 state = PlayerState.FREEFALL;
-            }
-            else if(vel_y < minJumpSpeed) {
+            } else if (vel_y < minJumpSpeed) {
                 state = PlayerState.FREEFALL;
             }
             break;
@@ -111,14 +180,14 @@ class Player : ScriptComponent {
         }
 
         // Actually detect jump
-        if (mInputRef.upPressed && !wasJumpPressed) {
+        if (input.upPressed && !wasJumpPressed) {
             if (state == PlayerState.GROUNDED || state == PlayerState.COYOTE)
                 DoJump();
             else if (state == PlayerState.FREEFALL)
                 jumpBufferCounter = bufferFrames;
         }
 
-        wasJumpPressed = mInputRef.upPressed; // store for next frame
+        wasJumpPressed = input.upPressed; // store for next frame
     }
 
     void DoJump() {
@@ -156,15 +225,13 @@ class Player : ScriptComponent {
     }
 
     void HandleCollisions() {
-        // auto collidedWith = mColliderRef.GetCollisions();
-        // foreach(obj; collidedWith)
-        // {
-        //     if(obj == "spike" || obj == "arrow")
-        //         mOwner.alive = false;
-        //     else if(obj.startsWith("apple"))
-        //     {
-        //         GameObject.GetGameObject(obj).alive = false;
-        //     }
-        // }
+        auto collidedWith = mColliderRef.GetCollisions();
+        foreach (obj; collidedWith) {
+            if (obj == "spike" || obj == "arrow")
+                mOwner.alive = false;
+            else if (obj.startsWith("apple")) {
+                GameObject.GetGameObject(obj).alive = false;
+            }
+        }
     }
 }
