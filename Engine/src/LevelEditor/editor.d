@@ -74,22 +74,22 @@ class Editor : Application {
         ui.AddButton(grid);
 
         // Make brush buttons manually
-        ui.AddButton(new BrushButton(1, mRendererRef, &brush, SDL_Rect(20, 100, 290, 144)));
-        ui.AddButton(new BrushButton(2, mRendererRef, &brush, SDL_Rect(20, 256, 290, 144)));
-        ui.AddButton(new BrushButton(3, mRendererRef, &brush, SDL_Rect(20, 396, 290, 98)));
-        ui.AddButton(new BrushButton(4, mRendererRef, &brush, SDL_Rect(20, 494, 303, 144)));
-        ui.AddButton(new BrushButton(5, mRendererRef, &brush, SDL_Rect(20, 636, 303, 144)));
-        ui.AddButton(new BrushButton(0, mRendererRef, &brush, SDL_Rect(20, 780, 290, 128)));
+        ui.AddButton(new BrushButton(1, mRendererRef, &brush, SDL_Rect(32, 78, 258, 106)));
+        ui.AddButton(new BrushButton(2, mRendererRef, &brush, SDL_Rect(32, 195, 258, 106)));
+        ui.AddButton(new BrushButton(3, mRendererRef, &brush, SDL_Rect(32, 299, 253, 80)));
+        ui.AddButton(new BrushButton(4, mRendererRef, &brush, SDL_Rect(32, 376, 258, 98)));
+        ui.AddButton(new BrushButton(5, mRendererRef, &brush, SDL_Rect(32, 482, 258, 98)));
+        ui.AddButton(new BrushButton(0, mRendererRef, &brush, SDL_Rect(32, 586, 290, 128)));
 
         // Make scene buttons
-        ui.AddButton(new SceneButton(1, mRendererRef, &scene, &SwitchScene, SDL_Rect(669, 734, 75, 84)));
-        ui.AddButton(new SceneButton(2, mRendererRef, &scene, &SwitchScene, SDL_Rect(781, 734, 75, 84)));
-        ui.AddButton(new SceneButton(3, mRendererRef, &scene, &SwitchScene, SDL_Rect(894, 734, 75, 84)));
+        ui.AddButton(new SceneButton(1, mRendererRef, &scene, &SwitchScene, SDL_Rect(669, 549, 74, 68)));
+        ui.AddButton(new SceneButton(2, mRendererRef, &scene, &SwitchScene, SDL_Rect(781, 549, 74, 68)));
+        ui.AddButton(new SceneButton(3, mRendererRef, &scene, &SwitchScene, SDL_Rect(894, 549, 74, 68)));
 
         // Make play button
         Button button = new Button();
         button.onClick = &PlayClicked;
-        button.rect = SDL_Rect(669, 837, 270, 84);
+        button.rect = SDL_Rect(669, 626, 304, 68);
         ui.AddButton(button);
     }
 
@@ -225,18 +225,13 @@ class Editor : Application {
     override void Tick() {
         Render();
         Input();
-        writeln(camera.pos);
-        writeln(rightPressed);
 
         int moveAmount = max(1, cast(int)(camera.zoom * moveSpeed));
         // Move camera based on input
         if (leftPressed)
             camera.x = cast(int) max(0, camera.x - moveAmount);
-        if (rightPressed) {
-            writeln(camera.x);
+        if (rightPressed)
             camera.x = cast(int) min(grid.width * grid.square_size, camera.x + moveAmount);
-            writeln(camera.x);
-        }
         if (upPressed)
             camera.y = cast(int) max(0, camera.y - moveAmount);
         if (downPressed)
