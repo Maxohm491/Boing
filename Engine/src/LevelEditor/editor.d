@@ -18,7 +18,7 @@ import std.string;
 struct Camera {
     SDL_Point pos; /// The position of the camera on the grid, in screen coordinates
     alias pos this;
-    float zoom = 1.0f;
+    float zoom = 2.0f;
 
     /// Positions the camera at the given coordinates.
     void PositionCamera(int x, int y) {
@@ -49,6 +49,8 @@ class Editor : Application {
         mRendererRef = r;
 
         ui = new UserInterface();
+        camera.x += 22;
+        camera.y += 22;
 
         // Load background image
         background = new Texture();

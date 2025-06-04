@@ -20,6 +20,8 @@ class Grid : Button {
     int[][] tiles;
     int width, height;
     SDL_Renderer* mRendererRef;
+    float scale = 1.0f;
+
     Camera* camera;
     SDL_Rect window; // The rectangle that represents what part of the grid is visible
 
@@ -46,8 +48,8 @@ class Grid : Button {
     void RecalculateSquareSize() {
         float size_x = camera.zoom * ((SCREEN_X - x) / cast(float) width);
         float size_y = camera.zoom * (y / cast(float) height);
-        writeln("size_x: ", size_x, " size_y: ", size_y);
         this.square_size = cast(int) round(min(size_x, size_y));
+        this.scale = cast(float) PIXELS_PER_TILE / cast(float) square_size;
     }
 
     /// Handles mouse clicks or drag events, updating tile values using current brush.
@@ -214,30 +216,28 @@ class Grid : Button {
 
     /// Renders the tile grid and its UI representation.
     override void Render() {
-        // SDL_Rect square = SDL_Rect(x, 0, square_size, square_size);
-        // foreach (i; 0 .. height) {
-        //     foreach (j; 0 .. width) {
-
-        //         SDL_Rect screenPose = SDL_Rect(square.x - camera.x, square.y - camera.y, square_size, square_size);
-
-        //         mTilemap.RenderTile(tiles[j][i], &square);
-        //         square.x += square_size;
-        //     }
-        //     square.x = x;
-        //     square.y += square_size;
-        // }
 
         SDL_Rect square = SDL_Rect(0, 0, square_size, square_size);
         foreach (i; 0 .. height) {
             foreach (j; 0 .. width) {
-                SDL_Rect screenPos = SDL_Rect(cast(int) ((square.x - camera.x) * camera.zoom), cast(
-                        int) ((square.y - camera.y) * camera.zoom), square_size, square_size);
+                SDL_Rect screenPos = SDL_Rect(cast(int)(square.x - camera.x), cast(
+                        int)(square.y - camera.y), square_size, square_size);
 
-                // If would be visible
-                if (screenPos.x + square_size <= window.w && screenPos.x >= window.x &&
-                    screenPos.y + square_size <= window.h && screenPos.y >= window.y) {
-                    screenPos.x += x;
-                    mTilemap.RenderTile(tiles[j][i], &screenPos);
+                SDL_Rect clipped;
+                if (SDL_IntersectRect(&screenPos, &window, &clipped)) {
+                    // Calculate the offset in the tile texture to start drawing from. mainly just for ones right on the edge
+                    int dx = cast(int) round((clipped.x - screenPos.x) * scale);
+                    int dy = cast(int) round((clipped.y - screenPos.y) * scale);
+                    int dw = cast(int) round(clipped.w * scale);
+                    int dh = cast(int) round(clipped.h * scale);
+
+                    // Source rect for the tile texture 
+                    SDL_Rect srcRect = SDL_Rect(dx, dy, dw, dh);
+                    writeln(srcRect);
+                    clipped.x += x; // Offset by grid x position
+
+                    // Render only the visible part of the tile
+                    mTilemap.RenderTilePartial(tiles[j][i], &srcRect, &clipped);
                 }
 
                 square.x += square_size;
@@ -248,12 +248,27 @@ class Grid : Button {
 
         // Draw grid itself
         SDL_SetRenderDrawColor(mRendererRef, 150, 150, 150, SDL_ALPHA_OPAQUE);
-        foreach (i; 0 .. width + 1) {
-            SDL_RenderDrawLine(mRendererRef, x + i * square_size, 0, x + i * square_size, height * square_size);
+
+        SDL_RenderDrawLine(mRendererRef, x, 1, x + width * square_size, 1);
+        SDL_RenderDrawLine(mRendererRef, x, y, x + width * square_size, y);
+        SDL_RenderDrawLine(mRendererRef, SCREEN_X - 1, 0, SCREEN_X - 1, y);
+        SDL_RenderDrawLine(mRendererRef, x, 0, x, y);
+
+        // math magic !
+        for(int i = (cast(int) floor(cast(float) camera.x / cast(float) square_size) + 1) * square_size  - camera.x + x; i <= SCREEN_X; i+= square_size) {
+            SDL_RenderDrawLine(mRendererRef, i, 0, i, y);
         }
-        foreach (i; 0 .. height + 1) {
-            SDL_RenderDrawLine(mRendererRef, x, i * square_size, x + width * square_size, i * square_size);
+
+        for(int i = (cast(int) floor(cast(float) camera.y / cast(float) square_size) + 1) * square_size - camera.y; i <= y; i += square_size) {
+            SDL_RenderDrawLine(mRendererRef, x, i, SCREEN_X, i);
         }
+
+        // foreach (i; 0 .. width + 1) {
+        //     SDL_RenderDrawLine(mRendererRef, x + i * square_size, 0, x + i * square_size, height * square_size);
+        // }
+        // foreach (i; 0 .. height + 1) {
+        //     SDL_RenderDrawLine(mRendererRef, x, i * square_size, x + width * square_size, i * square_size);
+        // }
         SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
     }
 }
