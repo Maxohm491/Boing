@@ -14,11 +14,12 @@ import std.json;
 import std.file;
 import std.conv;
 import std.string;
+import std.algorithm;
 
 struct Camera {
-    SDL_Point pos; /// The position of the camera on the grid, in screen coordinates
+    SDL_Point pos; /// The position of the camera on the grid, in screen coordinates relative to the grid portion of the screen.
     alias pos this;
-    float zoom = 2.0f;
+    float zoom = 1.0f;
 
     /// Positions the camera at the given coordinates.
     void PositionCamera(int x, int y) {
@@ -41,6 +42,13 @@ class Editor : Application {
     immutable int START_X = 364; /// The x-coord of the start of grid
     immutable int END_Y = 512; /// The y-coord of the end of grid
     bool running = false; /// Whether the editor is currently running
+    immutable float scrollSpeed = 0.1f;
+    immutable int moveSpeed = 1;
+
+    bool leftPressed = false;
+    bool rightPressed = false;
+    bool upPressed = false;
+    bool downPressed = false;
 
     Camera camera;
 
@@ -49,8 +57,6 @@ class Editor : Application {
         mRendererRef = r;
 
         ui = new UserInterface();
-        camera.x += 22;
-        camera.y += 22;
 
         // Load background image
         background = new Texture();
@@ -168,7 +174,7 @@ class Editor : Application {
             // Detect quits
             if (event.type == SDL_QUIT)
                 quitCallback();
-            if (event.type == SDL_MOUSEBUTTONDOWN) {
+            else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 mouseX = event.button.x;
                 mouseY = event.button.y;
 
@@ -177,6 +183,31 @@ class Editor : Application {
                     const clickPoint = SDL_Point(mouseX, mouseY);
                     ui.CheckClick(&clickPoint, true); // if not clicked then it wasn't clicked last frame and was just pressed
                 }
+            } else if (event.type == SDL_MOUSEWHEEL) {
+                camera.zoom = clamp(camera.zoom + event.wheel.y * scrollSpeed, 0.1f, 10.0f);
+                grid.RecalculateSquareSize();
+            } else if (event.type == SDL_KEYDOWN) {
+                auto key = event.key.keysym.sym;
+                // Should probably be another switch but oh well
+                if (key == SDLK_a || key == SDLK_LEFT)
+                    leftPressed = true;
+                else if (key == SDLK_d || key == SDLK_RIGHT)
+                    rightPressed = true;
+                else if (key == SDLK_w || key == SDLK_UP)
+                    upPressed = true;
+                else if (key == SDLK_s || key == SDLK_DOWN)
+                    downPressed = true;
+
+            } else if (event.type == SDL_KEYUP) {
+                auto key = event.key.keysym.sym;
+                if (key == SDLK_a || key == SDLK_LEFT)
+                    leftPressed = false;
+                else if (key == SDLK_d || key == SDLK_RIGHT)
+                    rightPressed = false;
+                else if (key == SDLK_w || key == SDLK_UP)
+                    upPressed = false;
+                else if (key == SDLK_s || key == SDLK_DOWN)
+                    downPressed = false;
             }
         }
 
@@ -194,6 +225,22 @@ class Editor : Application {
     override void Tick() {
         Render();
         Input();
+        writeln(camera.pos);
+        writeln(rightPressed);
+
+        int moveAmount = max(1, cast(int)(camera.zoom * moveSpeed));
+        // Move camera based on input
+        if (leftPressed)
+            camera.x = cast(int) max(0, camera.x - moveAmount);
+        if (rightPressed) {
+            writeln(camera.x);
+            camera.x = cast(int) min(grid.width * grid.square_size, camera.x + moveAmount);
+            writeln(camera.x);
+        }
+        if (upPressed)
+            camera.y = cast(int) max(0, camera.y - moveAmount);
+        if (downPressed)
+            camera.y = cast(int) min(grid.height * grid.square_size, camera.y + moveAmount);
     }
 
     /// Called when the editor is started. Loads the currently selected scene.

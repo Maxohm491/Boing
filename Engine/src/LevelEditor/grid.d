@@ -54,9 +54,11 @@ class Grid : Button {
 
     /// Handles mouse clicks or drag events, updating tile values using current brush.
     void Clicked(SDL_Point point) {
+        SDL_Point screenPos = SDL_Point(point.x + camera.x, point.y + camera.y);
+
         // Find which box was clicked and update index
-        int x_idx = (point.x - x) / square_size;
-        int y_idx = point.y / square_size;
+        int x_idx = (screenPos.x - x) / square_size;
+        int y_idx = screenPos.y / square_size;
 
         // Just make sure
         x_idx = clamp(x_idx, 0, width - 1);
@@ -233,7 +235,6 @@ class Grid : Button {
 
                     // Source rect for the tile texture 
                     SDL_Rect srcRect = SDL_Rect(dx, dy, dw, dh);
-                    writeln(srcRect);
                     clipped.x += x; // Offset by grid x position
 
                     // Render only the visible part of the tile
@@ -249,26 +250,27 @@ class Grid : Button {
         // Draw grid itself
         SDL_SetRenderDrawColor(mRendererRef, 150, 150, 150, SDL_ALPHA_OPAQUE);
 
-        SDL_RenderDrawLine(mRendererRef, x, 1, x + width * square_size, 1);
-        SDL_RenderDrawLine(mRendererRef, x, y, x + width * square_size, y);
-        SDL_RenderDrawLine(mRendererRef, SCREEN_X - 1, 0, SCREEN_X - 1, y);
-        SDL_RenderDrawLine(mRendererRef, x, 0, x, y);
+        int right_bound = min(SCREEN_X, x + width * square_size - camera.x);
+        int bottom_bound = min(y, height * square_size - camera.y);
+
+        // Manually do edges cause it looks better
+        SDL_RenderDrawLine(mRendererRef, x, 1, right_bound, 1);
+        SDL_RenderDrawLine(mRendererRef, x, bottom_bound, right_bound, bottom_bound);
+        SDL_RenderDrawLine(mRendererRef, right_bound, 0, right_bound, bottom_bound);
+        SDL_RenderDrawLine(mRendererRef, x, 0, x, bottom_bound);
 
         // math magic !
-        for(int i = (cast(int) floor(cast(float) camera.x / cast(float) square_size) + 1) * square_size  - camera.x + x; i <= SCREEN_X; i+= square_size) {
-            SDL_RenderDrawLine(mRendererRef, i, 0, i, y);
+        for (int i = (cast(int) floor(
+                cast(float) camera.x / cast(float) square_size) + 1) * square_size - camera.x + x;
+            i <= right_bound; i += square_size) {
+            SDL_RenderDrawLine(mRendererRef, i, 0, i, bottom_bound);
         }
 
-        for(int i = (cast(int) floor(cast(float) camera.y / cast(float) square_size) + 1) * square_size - camera.y; i <= y; i += square_size) {
-            SDL_RenderDrawLine(mRendererRef, x, i, SCREEN_X, i);
+        for (int i = (cast(int) floor(
+                cast(float) camera.y / cast(float) square_size) + 1) * square_size - camera.y;
+            i <= bottom_bound; i += square_size) {
+            SDL_RenderDrawLine(mRendererRef, x, i, right_bound, i);
         }
-
-        // foreach (i; 0 .. width + 1) {
-        //     SDL_RenderDrawLine(mRendererRef, x + i * square_size, 0, x + i * square_size, height * square_size);
-        // }
-        // foreach (i; 0 .. height + 1) {
-        //     SDL_RenderDrawLine(mRendererRef, x, i * square_size, x + width * square_size, i * square_size);
-        // }
         SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
     }
 }
