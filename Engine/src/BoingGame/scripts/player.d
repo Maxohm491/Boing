@@ -33,7 +33,7 @@ class Player : ScriptComponent {
     float maxJumpSpeed = 1.7; // To make a nice fun jump set max when they hit space and min when they let go
     float maxVertSpeed = 2.2;
     // float gravity = 0.075; // old jump gravity
-    float gravity = 0.1; // old jump gravity
+    float gravity = 0.15;
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
     int jumpBufferCounter = -1; // Used to buffer jumps
@@ -42,11 +42,12 @@ class Player : ScriptComponent {
     int coyoteFrames = 5; // How many frames we can jump after leaving the ground
     bool wasJumpPressed = false;
     bool grounded = false;
+    float horizonalAirResistance = 0.07222222222f; // How much to slow down horizontal movement in the air per frame
 
     float horiDashVelocityMax = 2; // max speeds from a dash
     float vertDashVelocityMax = 2;
     float diagDashVelocityMax = 1.4; // per direction
-    int dashLengthFrames = 7;
+    int dashLengthFrames = 12;
     int dashCounter = 0; // How many frames we've been dashing
     int dashFreezeFrames = 3;
 
@@ -64,20 +65,14 @@ class Player : ScriptComponent {
 
     override void Update() {
         HandleCollisions();
-        // HandleJumpMotion();
         HandleDashMotion();
 
-        // Horizontal movement
-        // vel_x = runSpeed * input.GetDir();
-        // if (vel_x != 0)
-        //     mSpriteRef.flipped = vel_x < 0;
-
-        // if (state != PlayerState.GROUNDED)
-        //     vel_y -= gravity;
-        if (state != PlayerState.DASHING)
+        if (state != PlayerState.DASHING && state != PlayerState.GROUNDED)
             vel_y -= gravity;
 
-        vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
+        // vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
+
+        writeln("vel_x: ", vel_x, " vel_y: ", vel_y, " state: ", state);
         actor.MoveX(vel_x, &OnSideCollision);
         actor.MoveY(-vel_y, &OnVerticalCollision);
     }
@@ -85,13 +80,14 @@ class Player : ScriptComponent {
     void HandleDashMotion() {
         switch (state) {
         case PlayerState.DASHING:
-            writeln("Dashing");
             dashCounter++;
             if (dashCounter > dashLengthFrames)
                 state = PlayerState.FREEFALL; // End dash
             break;
+        case PlayerState.GROUNDED:
+            writeln("Grounded");
+            goto default; 
         default:
-            writeln("Not");
             // I think this is nifty but maybe not the best way
             int dashCode = 0;
             if (input.leftPressed)
@@ -127,7 +123,8 @@ class Player : ScriptComponent {
             case 8:
             case 7:
             case 11:
-                writeln("vertical");
+                vel_x = 0;
+                vel_y = (input.downPressed ? min(-vertDashVelocityMax, vel_y) : max(vertDashVelocityMax, vel_y));
                 break;
             default:
                 writeln("in place");
@@ -137,6 +134,13 @@ class Player : ScriptComponent {
             if (dashCode != 0) {
                 state = PlayerState.DASHING;
                 dashCounter = 0;
+            }
+            else {
+                if(vel_x > 0) {
+                    vel_x = max(0, vel_x - horizonalAirResistance);
+                } else {
+                    vel_x = min(0, vel_x + horizonalAirResistance);
+                }
             }
             break;
         }
@@ -201,27 +205,16 @@ class Player : ScriptComponent {
             return;
 
         state = PlayerState.GROUNDED;
-        vel_y = 0; // Reset vertical velocity
-
-        // Check for buffered jump
-        if (jumpBufferCounter >= 0) {
-            jumpBufferCounter = -1; // Reset jump buffer
-            DoJump();
-        }
+        vel_y = 0; // Reset velocity
+        vel_x = 0;
     }
 
     void OnVerticalCollision() {
-        if (vel_y > 0) // going up
-        {
-            vel_y = 0;
-        } else // going down
-        {
-            BecomeGrounded();
-        }
+        BecomeGrounded();
     }
 
     void OnSideCollision() {
-        vel_x = 0;
+        BecomeGrounded();
     }
 
     void HandleCollisions() {
