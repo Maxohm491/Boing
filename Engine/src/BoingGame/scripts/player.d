@@ -41,6 +41,7 @@ class Player : ScriptComponent {
     float fastestManualAirSpeedHorizontal = 1.5; // The point after which we stop accelerating horizontally in the air
 
     float maxVertSpeed = 2;
+    float crawlSpeed = 0.3; // Speed when crawling
 
     float horiDashVelocityMax = 2; // max speeds from a dash
     float vertDashVelocityMax = 2;
@@ -92,6 +93,81 @@ class Player : ScriptComponent {
         }
     }
 
+    void GroundedMotion() {
+        // Default to no motion
+        vel_x = 0;
+        vel_y = 0;
+
+        // Figure out what the walls around us are
+        int solids = actor.SolidsAround();
+        writeln("solids: ", solids);
+
+        switch (solids) {
+        case 1: // L, R, LR
+        case 2:
+        case 3:
+            vel_y = (input.downPressed ? -crawlSpeed : 0) + (input.upPressed ? crawlSpeed : 0);
+            break;
+        case 4: // U, D, UD
+        case 8:
+        case 12:
+            vel_x = (input.leftPressed ? -crawlSpeed : 0) + (input.rightPressed ? crawlSpeed : 0);
+            break;
+        case 13: // LUD
+            vel_x = (input.rightPressed ? crawlSpeed : 0);
+            break;
+        case 14: // RUD
+            vel_x = (input.leftPressed ? -crawlSpeed : 0);
+            break;
+        case 7: // URL
+            vel_y = (input.downPressed ? -crawlSpeed : 0);
+            break;
+        case 11: // DRL
+            vel_y = (input.upPressed ? crawlSpeed : 0);
+            break;
+        case 5: // LU
+        case -8: // DR corner
+            if (input.rightPressed && input.downPressed) {
+                break;
+            }
+            vel_x = (input.rightPressed ? crawlSpeed : 0);
+            vel_y = (input.downPressed ? -crawlSpeed : 0);
+            break;
+        case 9: // LD, UR corner
+        case -2:
+            if (input.rightPressed && input.upPressed) {
+                break;
+            }
+            vel_x = (input.rightPressed ? crawlSpeed : 0);
+            vel_y = (input.upPressed ? crawlSpeed : 0);
+            break;
+        case 6: // RU, DL corner
+        case -4:
+            if (input.leftPressed && input.downPressed) {
+                break;
+            }
+            vel_x = (input.leftPressed ? -crawlSpeed : 0);
+            vel_y = (input.downPressed ? -crawlSpeed : 0);
+            break;
+        case 10: // RD, UL corner
+        case -1:
+            if (input.leftPressed && input.upPressed) {
+                break;
+            }
+            vel_x = (input.leftPressed ? -crawlSpeed : 0);
+            vel_y = (input.upPressed ? crawlSpeed : 0);
+            break;
+        case 15: // All walls
+            break;
+        // UL = -1, UR = -2, DL = -4, DR = -8
+        // TODO: unimplemented cases of multiple corners
+
+        default:
+            assert(0, "Unknown solids around player");
+            break;
+        }
+    }
+
     void HandleMotion() {
         switch (state) {
         case PlayerState.DASHING:
@@ -105,7 +181,7 @@ class Player : ScriptComponent {
             break;
         case PlayerState.GROUNDED:
             if (!StartDash())
-                writeln("Grounded");
+                GroundedMotion();
             break;
         default:
             break;
@@ -181,6 +257,7 @@ class Player : ScriptComponent {
     void OnVerticalCollision() {
         if (bouncy) {
             vel_y = -vel_y;
+            state = PlayerState.FREEFALL; // Bounce ends dash
         } else {
             BecomeGrounded();
         }
@@ -189,6 +266,8 @@ class Player : ScriptComponent {
     void OnSideCollision() {
         if (bouncy) {
             vel_x = -vel_x;
+            state = PlayerState.FREEFALL; // Bounce ends dash
+
         } else {
             BecomeGrounded();
         }

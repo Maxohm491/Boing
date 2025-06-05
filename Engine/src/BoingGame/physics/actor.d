@@ -83,5 +83,69 @@ class Actor {
 
         return result;
     }
-}
 
+    // 1 = left, 2 = right, 4 = up, 8 = down
+    int SolidsAround() {
+        int result = 0;
+
+        transform.y += 1;
+        collider.rect.y += 1; // Adjust the collider too
+        if (collider.CollidesWithSolid())
+            result += 8;
+
+        transform.y -= 2;
+        collider.rect.y -= 2;
+        if (collider.CollidesWithSolid())
+            result += 4;
+
+        transform.y += 1;
+        collider.rect.y += 1;
+        transform.x += 1;
+        collider.rect.x += 1;
+        if (collider.CollidesWithSolid())
+            result += 2;
+
+        transform.x -= 2;
+        collider.rect.x -= 2;
+        if (collider.CollidesWithSolid())
+            result += 1;
+
+        // Undo the move
+        transform.x += 1;
+        collider.rect.x += 1;
+
+        // If our corner is solid but nothing else, count walls differently
+        // UL = -1, UR = -2, DL = -4, DR = -8
+        if (result == 0) {
+            transform.y += 1;
+            collider.rect.y += 1;
+            transform.x += 1;
+            collider.rect.x += 1;
+            if (collider.CollidesWithSolid())
+                result += -8;
+
+            transform.y -= 2;
+            collider.rect.y -= 2;
+            if (collider.CollidesWithSolid())
+                result += -2;
+
+            transform.x -= 2;
+            collider.rect.x -= 2;
+            if (collider.CollidesWithSolid())
+                result += -1;
+
+            transform.y += 2;
+            collider.rect.y += 2;
+            if (collider.CollidesWithSolid())
+                result += -4;
+
+            // Undo the move
+            transform.x += 1;
+            collider.rect.x += 1;
+            transform.y -= 1;
+            collider.rect.y -= 1;
+        }
+
+        return result;
+    }
+}
