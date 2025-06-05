@@ -15,8 +15,10 @@ class Player : ScriptComponent {
     enum PlayerState {
         FREEFALL,
         GROUNDED,
-        DASHING
+        DASHING,
     }
+
+    bool bouncy = false;
 
     PlayerState state = PlayerState.FREEFALL;
     GameObject mOwner;
@@ -29,7 +31,6 @@ class Player : ScriptComponent {
     float runSpeed = 0.7;
     float minJumpSpeed = 0.7;
     float maxJumpSpeed = 1.7; // To make a nice fun jump set max when they hit space and min when they let go
-    float maxVertSpeed = 2.2;
     // float gravity = 0.075; // old jump gravity
     float gravity = 0.15;
     float vel_y = 0; // Positive is up
@@ -38,6 +39,8 @@ class Player : ScriptComponent {
     float horizonalAirResistance = 0.07222222222f; // How much to slow down horizontal movement in the air per frame
     float airAcceleration = 0.27777777777f;
     float fastestManualAirSpeedHorizontal = 1.5; // The point after which we stop accelerating horizontally in the air
+
+    float maxVertSpeed = 2;
 
     float horiDashVelocityMax = 2; // max speeds from a dash
     float vertDashVelocityMax = 2;
@@ -59,6 +62,8 @@ class Player : ScriptComponent {
     }
 
     override void Update() {
+        bouncy = input.bouncyPressed;
+
         HandleCollisions();
         HandleMotion();
 
@@ -71,7 +76,9 @@ class Player : ScriptComponent {
         // Apply gravity
         vel_y -= gravity;
 
-        // vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
+        if (!bouncy)
+            vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed); // TODO: more complex check
+
         if (input.leftPressed && vel_x >= -fastestManualAirSpeedHorizontal) {
             vel_x = max(-fastestManualAirSpeedHorizontal, vel_x - airAcceleration);
         } else if (input.rightPressed && vel_x <= fastestManualAirSpeedHorizontal) {
@@ -103,8 +110,6 @@ class Player : ScriptComponent {
         default:
             break;
         }
-
-        //maybe if contradictary input, dash "in place"
     }
 
     // Check for dash input and perform dash if applicable
@@ -152,6 +157,9 @@ class Player : ScriptComponent {
             break;
         default:
             writeln("in place");
+            //if contradictary input, dash "in place" maybe
+            // vel_x = 0;
+            // vel_y = 0;
             break;
         }
 
@@ -171,11 +179,19 @@ class Player : ScriptComponent {
     }
 
     void OnVerticalCollision() {
-        BecomeGrounded();
+        if (bouncy) {
+            vel_y = -vel_y;
+        } else {
+            BecomeGrounded();
+        }
     }
 
     void OnSideCollision() {
-        BecomeGrounded();
+        if (bouncy) {
+            vel_x = -vel_x;
+        } else {
+            BecomeGrounded();
+        }
     }
 
     void HandleCollisions() {

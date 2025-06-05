@@ -217,6 +217,7 @@ class InputComponent : IComponent {
 	bool upPressed = false;
 	bool downPressed = false;
 	bool dashPressed = false;
+	bool bouncyPressed = false;
 
 	this(GameObject owner) {
 		mOwner = owner;
@@ -248,6 +249,8 @@ class InputComponent : IComponent {
 				downPressed = true;
 			else if (key == SDLK_x)
 				dashPressed = true;
+			else if (key == SDLK_z)
+				bouncyPressed = true; 
 			break;
 		case SDL_KEYUP:
 			auto key = event.key.keysym.sym;
@@ -261,6 +264,8 @@ class InputComponent : IComponent {
 				downPressed = false;
 			else if (key == SDLK_x)
 				dashPressed = false;
+			else if (key == SDLK_z)
+				bouncyPressed = false; 
 			break;
 		default:
 			break;
