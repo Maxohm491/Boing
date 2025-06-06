@@ -1,7 +1,11 @@
 module constants;
 
-immutable int SCREEN_X = 1280; // screen pixels
-immutable int SCREEN_Y = 720; // screen pixels
+immutable int SCREEN_X = 1920; // screen pixels
+immutable int SCREEN_Y = 1080; 
+
+immutable float SCALE_FROM_720 = cast(float) SCREEN_Y / 720.0f; // Scale factor from 720p to current resolution
+// immutable int SCREEN_X = 1280; // screen pixels
+// immutable int SCREEN_Y = 720; // screen pixels
 
 private immutable int GRID_X = 40; // Number of tiles on screen at a time 
 private immutable int GRID_Y = 23;

@@ -39,8 +39,8 @@ class Editor : Application {
     int brush = 1; /// Which brush is currently active
     Grid grid; /// The grid of tiles
 
-    immutable int START_X = 364; /// The x-coord of the start of grid
-    immutable int END_Y = 512; /// The y-coord of the end of grid
+    immutable int START_X = cast(int) (364 * SCALE_FROM_720); /// The x-coord of the start of grid
+    immutable int END_Y = cast(int) (512 * SCALE_FROM_720); /// The y-coord of the end of grid
     bool running = false; /// Whether the editor is currently running
     immutable float scrollSpeed = 0.1f;
     immutable int moveSpeed = 1;
@@ -73,22 +73,22 @@ class Editor : Application {
         ui.AddButton(grid);
 
         // Make brush buttons manually
-        ui.AddButton(new BrushButton(1, mRendererRef, &brush, SDL_Rect(32, 78, 258, 106)));
-        ui.AddButton(new BrushButton(2, mRendererRef, &brush, SDL_Rect(32, 195, 258, 106)));
-        ui.AddButton(new BrushButton(3, mRendererRef, &brush, SDL_Rect(32, 299, 253, 80)));
-        ui.AddButton(new BrushButton(4, mRendererRef, &brush, SDL_Rect(32, 376, 258, 98)));
-        ui.AddButton(new BrushButton(5, mRendererRef, &brush, SDL_Rect(32, 482, 258, 98)));
-        ui.AddButton(new BrushButton(0, mRendererRef, &brush, SDL_Rect(32, 586, 290, 128)));
+        ui.AddButton(new BrushButton(1, mRendererRef, &brush, ScaleRect(SDL_Rect(32, 78, 258, 106), SCALE_FROM_720)));
+        ui.AddButton(new BrushButton(2, mRendererRef, &brush, ScaleRect(SDL_Rect(32, 195, 258, 106), SCALE_FROM_720)));
+        ui.AddButton(new BrushButton(3, mRendererRef, &brush, ScaleRect(SDL_Rect(32, 299, 253, 80), SCALE_FROM_720)));
+        ui.AddButton(new BrushButton(4, mRendererRef, &brush, ScaleRect(SDL_Rect(32, 376, 258, 98), SCALE_FROM_720)));
+        ui.AddButton(new BrushButton(5, mRendererRef, &brush, ScaleRect(SDL_Rect(32, 482, 258, 98), SCALE_FROM_720)));
+        ui.AddButton(new BrushButton(0, mRendererRef, &brush, ScaleRect(SDL_Rect(32, 586, 290, 128), SCALE_FROM_720)));
 
         // Make scene buttons
-        ui.AddButton(new SceneButton(1, mRendererRef, &scene, &SwitchScene, SDL_Rect(669, 549, 74, 68)));
-        ui.AddButton(new SceneButton(2, mRendererRef, &scene, &SwitchScene, SDL_Rect(781, 549, 74, 68)));
-        ui.AddButton(new SceneButton(3, mRendererRef, &scene, &SwitchScene, SDL_Rect(894, 549, 74, 68)));
+        ui.AddButton(new SceneButton(1, mRendererRef, &scene, &SwitchScene, ScaleRect(SDL_Rect(669, 549, 74, 68), SCALE_FROM_720)));
+        ui.AddButton(new SceneButton(2, mRendererRef, &scene, &SwitchScene, ScaleRect(SDL_Rect(781, 549, 74, 68), SCALE_FROM_720)));
+        ui.AddButton(new SceneButton(3, mRendererRef, &scene, &SwitchScene, ScaleRect(SDL_Rect(894, 549, 74, 68), SCALE_FROM_720)));
 
         // Make play button
         Button button = new Button();
         button.onClick = &PlayClicked;
-        button.rect = SDL_Rect(669, 626, 304, 68);
+        button.rect = ScaleRect(SDL_Rect(669, 626, 304, 68), SCALE_FROM_720);
         ui.AddButton(button);
     }
 
@@ -218,6 +218,15 @@ class Editor : Application {
             const clickPoint = SDL_Point(mouseX, mouseY);
             ui.CheckClick(&clickPoint, false); // if not clicked then it wasn't clicked last frame and was just pressed
         }
+    }
+
+    SDL_Rect ScaleRect(SDL_Rect rect, float scale) {
+        return SDL_Rect(
+            cast(int)(rect.x * scale),
+            cast(int)(rect.y * scale),
+            cast(int)(rect.w * scale),
+            cast(int)(rect.h * scale)
+        );
     }
 
     /// Main tick loop: renders frame and handles input.
