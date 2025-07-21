@@ -2,6 +2,7 @@ module scripts.player;
 
 import Engine.component;
 import Engine.tilemapcomponents;
+import Engine.scene;
 import Engine.gameobject;
 import scripts.script;
 import constants;
@@ -27,6 +28,7 @@ class Player : ScriptComponent {
     Actor actor;
     SpriteComponent mSpriteRef;
     InputComponent input;
+    Scene mScene;
     TilemapCollider mTilemap;
     float runSpeed = 0.7;
     float minJumpSpeed = 0.7;
@@ -77,18 +79,19 @@ class Player : ScriptComponent {
         // Apply gravity
         vel_y -= gravity;
 
-        if (!bouncy)
+        if (!bouncy) {
             vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed); // TODO: more complex check
 
-        if (input.leftPressed && vel_x >= -fastestManualAirSpeedHorizontal) {
-            vel_x = max(-fastestManualAirSpeedHorizontal, vel_x - airAcceleration);
-        } else if (input.rightPressed && vel_x <= fastestManualAirSpeedHorizontal) {
-            vel_x = min(fastestManualAirSpeedHorizontal, vel_x + airAcceleration);
-        } else {
-            if (vel_x > 0) {
-                vel_x = max(0, vel_x - horizonalAirResistance);
-            } else if (vel_x < 0) {
-                vel_x = min(0, vel_x + horizonalAirResistance);
+            if (input.leftPressed && vel_x >= -fastestManualAirSpeedHorizontal) {
+                vel_x = max(-fastestManualAirSpeedHorizontal, vel_x - airAcceleration);
+            } else if (input.rightPressed && vel_x <= fastestManualAirSpeedHorizontal) {
+                vel_x = min(fastestManualAirSpeedHorizontal, vel_x + airAcceleration);
+            } else {
+                if (vel_x > 0) {
+                    vel_x = max(0, vel_x - horizonalAirResistance);
+                } else if (vel_x < 0) {
+                    vel_x = min(0, vel_x + horizonalAirResistance);
+                }
             }
         }
     }
@@ -106,21 +109,21 @@ class Player : ScriptComponent {
             (!walls[1]) && (walls[2] || walls[3] || corners[1] || corners[3]), // right
             (!walls[2]) && (walls[0] || walls[1] || corners[0] || corners[1]), // up
             (!walls[3]) && (walls[0] || walls[1] || corners[2] || corners[3]), // down
-        ]; 
+        ];
 
-        if (canMove[0] && input.leftPressed) 
+        if (canMove[0] && input.leftPressed)
             vel_x = -crawlSpeed;
-        if (canMove[1] && input.rightPressed) 
+        if (canMove[1] && input.rightPressed)
             vel_x = crawlSpeed;
-        if (canMove[2] && input.upPressed) 
+        if (canMove[2] && input.upPressed)
             vel_y = crawlSpeed;
-        if (canMove[3] && input.downPressed) 
+        if (canMove[3] && input.downPressed)
             vel_y = -crawlSpeed;
-        
+
         if (vel_x != 0 && vel_y != 0) {
             // Never crawl diagonally, vertical precedence
             vel_x = 0;
-        } 
+        }
 
         // switch (solids) {
         // case 1: // L, R, LR
@@ -230,6 +233,7 @@ class Player : ScriptComponent {
         case 13:
             vel_x = min(-horiDashVelocityMax, vel_x);
             vel_y = 0;
+            writeln("left dash");
             break;
         case 2:
         case 14:
@@ -253,6 +257,7 @@ class Player : ScriptComponent {
             break;
         default:
             writeln("in place");
+            return false; // No valid dash direction
             //if contradictary input, dash "in place" maybe
             // vel_x = 0;
             // vel_y = 0;
@@ -262,6 +267,7 @@ class Player : ScriptComponent {
         state = PlayerState.DASHING;
         dashCounter = 0;
 
+        mScene.SetFreezeFrames(dashFreezeFrames); // Freeze the game for a few frames
         return true;
     }
 

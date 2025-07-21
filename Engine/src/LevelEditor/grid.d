@@ -273,4 +273,53 @@ class Grid : Button {
         }
         SDL_SetRenderDrawColor(mRendererRef, 0, 0, 0, SDL_ALPHA_OPAQUE);
     }
+
+    void AddRow() {
+        foreach (ref row; tiles) {
+            row ~= 16; // Add a new tile to each row
+        }
+        height += 1;
+        RecalculateSquareSize();
+    }
+
+    void AddColumn() {
+        int[] newRow;
+        newRow.length = width;
+        newRow[] = 16; // Fill with background
+        tiles ~= newRow;
+        width += 1;
+        RecalculateSquareSize();
+    }
+
+    void RemoveRow() {
+        if (width <= 2)
+            return; // Prevent removing all
+        foreach (ref row; tiles) {
+            if (row.length > 0)
+                row.length = row.length - 1;
+        }
+        height -= 1;
+
+        if(start_x == height) 
+            start_x = -1; // Reset start and end if on the last row
+        if(end_x == height) 
+            end_x = -1;
+        
+        RecalculateSquareSize();
+    }
+
+    void RemoveColumn() {
+        if (height <= 2)
+            return; // Prevent removing all
+        if (tiles.length > 0)
+            tiles.length = tiles.length - 1;
+        width -= 1;
+
+        if(start_y == height) 
+            start_y = -1; // Reset start and end if on the last row
+        if(end_y == height) 
+            end_y = -1;
+
+        RecalculateSquareSize();
+    }
 }

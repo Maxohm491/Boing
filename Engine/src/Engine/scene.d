@@ -42,6 +42,8 @@ class Scene {
     GameState mGameState;
     Camera camera;
 
+    int freezeFrames = 0; // freeze the whole game for this many frames
+
     SDL_Renderer* mRendererRef;
     SDL_Point mSpawnPoint;
     GameObject tilemap;
@@ -69,6 +71,7 @@ class Scene {
         texture.LoadTexture("./assets/images/character.bmp", mRendererRef);
         sprite.LoadMetaData("./assets/images/character.json");
 
+
         sprite.mRendererRef = mRendererRef;
 
         collider.rect.w = PIXELS_PER_TILE;
@@ -81,7 +84,8 @@ class Scene {
         auto input = new InputComponent(player);
         player.AddComponent!(ComponentType.INPUT)(input);
 
-        auto playScript = new Player(player);
+        auto playScript = new JumpPlayer(player);
+        // playScript.mScene = this;
         playScript.mTilemap = cast(TilemapCollider) tilemap.GetComponent(
             ComponentType.TILEMAP_COLLIDER);
         player.AddComponent!(ComponentType.SCRIPT)(playScript);
@@ -226,6 +230,11 @@ class Scene {
     }
 
     void Update() {
+        if (freezeFrames > 0) {
+            freezeFrames -= 1;
+            return; 
+        }
+
         foreach (obj; gameObjects) {
             obj.Update();
         }
@@ -269,5 +278,9 @@ class Scene {
 
     void AddGameObject(GameObject go) {
         gameObjects ~= go;
+    }
+
+    void SetFreezeFrames(int frames) {
+        freezeFrames = frames;
     }
 }

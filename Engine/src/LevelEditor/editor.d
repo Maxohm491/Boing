@@ -39,8 +39,8 @@ class Editor : Application {
     int brush = 1; /// Which brush is currently active
     Grid grid; /// The grid of tiles
 
-    immutable int START_X = cast(int) (364 * SCALE_FROM_720); /// The x-coord of the start of grid
-    immutable int END_Y = cast(int) (512 * SCALE_FROM_720); /// The y-coord of the end of grid
+    immutable int START_X = cast(int)(364 * SCALE_FROM_720); /// The x-coord of the start of grid
+    immutable int END_Y = cast(int)(512 * SCALE_FROM_720); /// The y-coord of the end of grid
     bool running = false; /// Whether the editor is currently running
     immutable float scrollSpeed = 0.1f;
     immutable int moveSpeed = 1;
@@ -49,6 +49,14 @@ class Editor : Application {
     bool rightPressed = false;
     bool upPressed = false;
     bool downPressed = false;
+    bool plusPressed = false;
+    bool minusPressed = false;
+    bool wasPlusPressed = false;
+    bool wasMinusPressed = false;
+    bool lbPressed = false;
+    bool rbPressed = false;
+    bool wasLbPressed = false;
+    bool wasRbPressed = false;
 
     Camera camera;
 
@@ -196,6 +204,14 @@ class Editor : Application {
                     upPressed = true;
                 else if (key == SDLK_s || key == SDLK_DOWN)
                     downPressed = true;
+                else if (key == SDLK_EQUALS)
+                    plusPressed = true;
+                else if (key == SDLK_MINUS)
+                    minusPressed = true;
+                else if (key == SDLK_LEFTBRACKET)
+                    lbPressed = true;
+                else if (key == SDLK_RIGHTBRACKET)
+                    rbPressed = true;
 
             } else if (event.type == SDL_KEYUP) {
                 auto key = event.key.keysym.sym;
@@ -207,6 +223,14 @@ class Editor : Application {
                     upPressed = false;
                 else if (key == SDLK_s || key == SDLK_DOWN)
                     downPressed = false;
+                else if (key == SDLK_EQUALS)
+                    plusPressed = false;
+                else if (key == SDLK_MINUS)
+                    minusPressed = false;
+                else if (key == SDLK_LEFTBRACKET)
+                    lbPressed = false;
+                else if (key == SDLK_RIGHTBRACKET)
+                    rbPressed = false;
             }
         }
 
@@ -244,6 +268,24 @@ class Editor : Application {
             camera.y = cast(int) max(0, camera.y - moveAmount);
         if (downPressed)
             camera.y = cast(int) min(grid.height * grid.square_size, camera.y + moveAmount);
+
+        // Resize grid
+        if (plusPressed && !wasPlusPressed)
+            grid.AddColumn();
+
+        if (minusPressed && !wasMinusPressed)
+            grid.RemoveColumn();
+
+        if (lbPressed && !wasLbPressed)
+            grid.RemoveRow();
+
+        if (rbPressed && !wasRbPressed)
+            grid.AddRow();   
+
+        wasPlusPressed = plusPressed;
+        wasMinusPressed = minusPressed;
+        wasLbPressed = lbPressed;
+        wasRbPressed = rbPressed;
     }
 
     /// Called when the editor is started. Loads the currently selected scene.
