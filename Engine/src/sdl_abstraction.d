@@ -1,7 +1,5 @@
 module src.sdl_abstraction;
 
-// From pset 04
-
 // Load the SDL2 library
 
 import std.stdio;

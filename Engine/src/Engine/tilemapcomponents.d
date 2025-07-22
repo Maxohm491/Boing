@@ -5,7 +5,6 @@ import Engine.gameobject;
 import std.algorithm;
 import bindbc.sdl;
 import std.json;
-import linear;
 import std.stdio;
 import constants;
 import std.math;

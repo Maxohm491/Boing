@@ -12,7 +12,7 @@ import Engine.resourcemanager;
 import Engine.tilemapcomponents;
 import std.math;
 import constants;
-import linear;
+// import linear;
 
 enum ComponentType {
 	TEXTURE,

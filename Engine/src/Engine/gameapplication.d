@@ -15,9 +15,6 @@ class GameApplication : Application
 	this(SDL_Renderer* r)
 	{
 		mRendererRef = r;
-		mScenes ~= new Scene(r, 1, &AdvanceScene);
-		mScenes ~= new Scene(r, 2, &AdvanceScene);
-		mScenes ~= new Scene(r, 3, &AdvanceScene);
 	}
 
 	void Input()
@@ -57,25 +54,6 @@ class GameApplication : Application
 		Update();
 	}
 
-	void AdvanceScene()
-	{
-		mCurrScene++;
-		if (mCurrScene > 2)
-		{
-			mCurrScene = 0;
-			switchAppCallback();
-		}
-	}
-
-	void LoadScenesFromJsons()
-	{
-		mScenes = null;
-
-		mScenes ~= new Scene(mRendererRef, 1, &AdvanceScene);
-		mScenes ~= new Scene(mRendererRef, 2, &AdvanceScene);
-		mScenes ~= new Scene(mRendererRef, 3, &AdvanceScene);
-	}
-
 	override void Tick()
 	{
 		int start = SDL_GetTicks();
@@ -87,7 +65,6 @@ class GameApplication : Application
 
 	override void Start()
 	{
-		LoadScenesFromJsons();
 	}
 
 	override void Stop()

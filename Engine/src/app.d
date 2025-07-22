@@ -3,13 +3,14 @@ module app;
 import std.stdio;
 import bindbc.sdl;
 import LevelEditor.editor;
+import BoingGame.boinggame;
 import Engine.gameapplication;
 import constants;
 import Engine.resourcemanager;
 import core.memory;
 
 // Both gameapplcation and editor extend this
-// Both hould be very self contained and call switchAppCallback() when they want to switch scenes
+// Both should be very self contained and call switchAppCallback() when they want to switch scenes
 abstract class Application
 {
     void delegate() switchAppCallback;
@@ -41,7 +42,7 @@ class MainApplication
 
         // Create game application and editor application
         editor = new Editor(mRenderer);
-        game = new GameApplication(mRenderer);
+        game = new BoingGameApp(mRenderer);
         editor.switchAppCallback = &SwitchRunningApp;
         game.switchAppCallback = &SwitchRunningApp;
         editor.quitCallback = &Quit;
@@ -96,3 +97,4 @@ void main()
     writeln("Goodbye!");
     ResourceManager.FreeAllTextures();
 }
+
