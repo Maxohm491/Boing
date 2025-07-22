@@ -1,0 +1,24 @@
+{
+    "filepath": "./assets/images/character.bmp",
+    "format": {
+        "width": 32,
+        "height": 16,
+        "tileWidth": 8,
+        "tileHeight": 8
+    },
+    "frames": {
+        "idle": [
+            0,
+            1
+        ],
+        "jump": [
+            2
+        ],
+        "leftWall": [
+            4
+        ],
+        "rightWall": [
+            3
+        ]
+    }
+}
