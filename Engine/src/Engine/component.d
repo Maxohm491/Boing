@@ -174,6 +174,7 @@ class SpriteComponent : IComponent {
 	void SetAnimation(string name) {
 		if (name in mFrameNumbers) {
 			mCurrentAnimationName = name;
+			mCurrentFrameIndex = 0;
 		} else {
 			assert(0, "Animation name not found");
 		}

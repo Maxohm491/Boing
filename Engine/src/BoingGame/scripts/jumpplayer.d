@@ -16,6 +16,7 @@ class JumpPlayer : ScriptComponent {
         JUMPING,
         FREEFALL,
         GROUNDED,
+        WALLED
     }
 
     PlayerState state = PlayerState.FREEFALL;
@@ -27,25 +28,25 @@ class JumpPlayer : ScriptComponent {
     InputComponent mInputRef;
     TilemapCollider mTilemap;
 
-    int coyoteWall = 0; // -1, 0, 1
+    bool leftWalled = false; // only meaningful when state == PlayerState.WALLEd
     int coyoteWallTime = 0;
     float runSpeed = 1;
     float runAccel = 0.24;
-    float airAccel = 0.07;
+    float airAccel = 0.14;
     float minJumpSpeed = 0.9;
-    float maxJumpSpeed = 2.7; // To make a nice fun jump set max when they hit space and min when they let go
-    float maxVertSpeed = 3.0;
+    float maxJumpSpeed = 2.5; // To make a nice fun jump set max when they hit space and min when they let go
+    float maxVertSpeed = 2.5;
     float airFriction = 0.06;
     float groundFriction = 0.2;
     float jumpBoost = 1.3;
-    float gravity = 0.095;
+    float gravity = 0.09;
     float vel_y = 0; // Positive is up
     float vel_x = 0; // Positive is right
     int jumpBufferCounter = -1; // Used to buffer jumps
     int bufferFrames = 5; // How many frames we can buffer a jump
     int coyoteTime = 0; // Used to allow jumps after leaving the ground
-    int coyoteFrames = 5; // How many frames we can jump after leaving the ground
-    int coyoteWallFrames = 3; // How many frames we can jump after leaving the wall
+    int coyoteFrames = 6; // How many frames we can jump after leaving the ground
+    int coyoteWallFrames = 6; // How many frames we can jump after leaving the wall
     bool wasJumpPressed = false;
     bool grounded = false;
 
@@ -71,21 +72,20 @@ class JumpPlayer : ScriptComponent {
             // Apply friction when not moving
             if (state == PlayerState.GROUNDED)
                 vel_x = vel_x - min(groundFriction, abs(vel_x)) * sgn(vel_x);
-            else
+            else if (state == PlayerState.FREEFALL || state == PlayerState.JUMPING)
                 vel_x = vel_x - min(airFriction, abs(vel_x)) * sgn(vel_x);
 
         } else {
             if (state == PlayerState.GROUNDED)
                 vel_x = clamp(vel_x + runAccel * mInputRef.GetDir(), -runSpeed, runSpeed);
-            else
+            else if (state == PlayerState.FREEFALL || state == PlayerState.JUMPING)
                 vel_x = clamp(vel_x + airAccel * mInputRef.GetDir(), -runSpeed, runSpeed);
         }
 
-        // vel_x = runSpeed * mInputRef.GetDir();
-        if (vel_x != 0)
+        if (vel_x != 0 && state != PlayerState.WALLED) 
             mSpriteRef.flipped = vel_x < 0;
 
-        if (state != PlayerState.GROUNDED)
+        if (state != PlayerState.GROUNDED && state != PlayerState.WALLED)
             vel_y -= gravity;
 
         vel_y = clamp(vel_y, -maxVertSpeed, maxVertSpeed);
@@ -94,6 +94,9 @@ class JumpPlayer : ScriptComponent {
     }
 
     void HandleJumpMotion() {
+        bool didJump = mInputRef.upPressed && !wasJumpPressed;
+        wasJumpPressed = mInputRef.upPressed; // store for next frame
+
         // Switch between states
         switch (state) {
         case PlayerState.JUMPING:
@@ -106,20 +109,19 @@ class JumpPlayer : ScriptComponent {
             }
             break;
         case PlayerState.FREEFALL:
-            bool[4] walls = actor.SolidsAround(); // [left, right, up, down]
-            if (walls[0]) {
-                coyoteWall = -1; // left wall
-                coyoteWallTime = 0;
-            } else if (walls[1]) {
-                coyoteWall = 1; // right wall
-                coyoteWallTime = 0;
-            } else {
-                coyoteWallTime++;
+            coyoteWallTime++;
+            coyoteTime++;
+            jumpBufferCounter--;
+
+            if (didJump) {
+                if (coyoteTime <= coyoteFrames)
+                    GroundJump();
+                else if (coyoteWallTime <= coyoteWallFrames)
+                    WallJump(leftWalled);
+                else
+                    jumpBufferCounter = bufferFrames;
             }
 
-            coyoteTime++;
-
-            jumpBufferCounter--;
             break;
         case PlayerState.GROUNDED:
             if (!actor.IsOnGround) {
@@ -129,28 +131,30 @@ class JumpPlayer : ScriptComponent {
             } else {
                 vel_y = 0; // Reset vertical velocity when grounded
             }
+
+            if (didJump)
+                GroundJump();
+
             break;
+        case PlayerState.WALLED:
+            vel_y = 0;
+
+            if (didJump) {
+                WallJump(leftWalled);
+                mSpriteRef.SetAnimation("idle");
+            }
+
+            if((mInputRef.rightPressed && leftWalled) || (mInputRef.leftPressed && !leftWalled) || mInputRef.downPressed) {
+                // If we press left or right, we leave the wall
+                state = PlayerState.FREEFALL;
+                coyoteWallTime = 0;
+                mSpriteRef.SetAnimation("idle");
+            } 
+            break;
+
         default:
             assert(0, "Unknown player state");
         }
-
-        // Actually detect jump
-        if (mInputRef.upPressed && !wasJumpPressed) {
-            if (state == PlayerState.GROUNDED || coyoteTime <= coyoteFrames) 
-                GroundJump();
-            else if (state == PlayerState.FREEFALL) {
-                bool[4] walls = actor.SolidsAround(); // [left, right, up, down]
-                if (walls[0] || (coyoteWallTime <= coyoteWallFrames && coyoteWall == -1))
-                    WallJump(true); // left wall
-                else if (walls[1] || (coyoteWallTime <= coyoteWallFrames && coyoteWall == 1))
-                    WallJump(false); // right wall
-                else
-                    jumpBufferCounter = bufferFrames;
-
-            }
-        }
-
-        wasJumpPressed = mInputRef.upPressed; // store for next frame
     }
 
     void GroundJump() {
@@ -196,19 +200,29 @@ class JumpPlayer : ScriptComponent {
     }
 
     void OnSideCollision() {
+        if (vel_x < 0) {
+            leftWalled = true;
+            mSpriteRef.flipped = false;
+            mSpriteRef.SetAnimation("leftWall");
+        } else {
+            leftWalled = false;
+            mSpriteRef.flipped = false;
+            mSpriteRef.SetAnimation("rightWall");
+        }
+
         vel_x = 0;
+
+        state = PlayerState.WALLED; // Reset to walled state
     }
 
     void HandleCollisions() {
-        // auto collidedWith = mColliderRef.GetCollisions();
-        // foreach(obj; collidedWith)
-        // {
-        //     if(obj == "spike" || obj == "arrow")
-        //         mOwner.alive = false;
-        //     else if(obj.startsWith("apple"))
-        //     {
-        //         GameObject.GetGameObject(obj).alive = false;
-        //     }
-        // }
+        auto collidedWith = mColliderRef.GetCollisions();
+        foreach (obj; collidedWith) {
+            if (obj == "spike" || obj == "arrow")
+                mOwner.alive = false;
+            else if (obj.startsWith("apple")) {
+                GameObject.GetGameObject(obj).alive = false;
+            }
+        }
     }
 }

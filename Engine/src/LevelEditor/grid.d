@@ -12,7 +12,7 @@ import LevelEditor.editor;
 /// Represents a grid of tiles in the level editor, used for placing and visualizing platform elements.
 /// Also supports start/end placement, spike/arrow autoplacement, and brush-driven editing.
 class Grid : Button {
-    int x, y, square_size, num_y, num_x; // x is coord of start of grid, y is coord of end
+    int x, y, square_size; // x is coord of start of grid, y is coord of end
     int* brush;
     int start_x = -1, start_y = -1;
     int end_x = -1, end_y = -1;

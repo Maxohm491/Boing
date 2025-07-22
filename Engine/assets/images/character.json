@@ -1,8 +1,8 @@
 {
     "filepath": "./assets/images/character.bmp",
     "format": {
-        "width": 24,
-        "height": 8,
+        "width": 32,
+        "height": 16,
         "tileWidth": 8,
         "tileHeight": 8
     },
@@ -13,6 +13,12 @@
         ],
         "jump": [
             2
+        ],
+        "leftWall": [
+            4
+        ],
+        "rightWall": [
+            3
         ]
     }
 }

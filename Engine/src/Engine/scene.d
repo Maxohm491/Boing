@@ -5,6 +5,8 @@ import Engine.tilemapcomponents;
 import std.algorithm;
 import Engine.gameobject;
 import Engine.gameapplication;
+import Engine.camerascript;
+import BoingGame.boingcamera;
 import scripts;
 import constants;
 import bindbc.sdl;
@@ -41,6 +43,7 @@ class Scene {
     GameObject player;
     GameState mGameState;
     Camera camera;
+    CameraScript cameraScript; // custom camera behavior
 
     int freezeFrames = 0; // freeze the whole game for this many frames
 
@@ -154,7 +157,7 @@ class Scene {
     ///     filename = Path to the scene JSON file.
     void LoadSceneFromJson(string filename) {
         camera = new Camera();
-        camera.PositionCamera(0, 0);
+        camera.PositionCamera(-50, 0);
 
         tilemap = GameObjectFactory!(ComponentType.TRANSFORM, ComponentType.TEXTURE,
             ComponentType.TILEMAP_COLLIDER, ComponentType.TILEMAP_SPRITE)("tilemap");
@@ -221,6 +224,11 @@ class Scene {
 
         AddGameObject(tilemap);
         AddGameObject(MakePlayer());
+
+        cameraScript = new BoingCamera();
+        (cast(BoingCamera) cameraScript).left = 0; // Set the min camera position
+        (cast(BoingCamera) cameraScript).right = cast(int) (tilesArray.length * 8 - GRID_X * 8); //(buf.length * PIXELS_PER_TILE) - SCREEN_X; //
+        cameraScript.camera = camera; // Set the camera reference for the script
     }
 
     void Input(SDL_Event e) {
@@ -262,6 +270,7 @@ class Scene {
         auto playerTransform = cast(TransformComponent) player.GetComponent(
             ComponentType.TRANSFORM);
         // camera.PositionCamera(-xy.x + (SCREEN_X / 2) - TILE_SIZE, -xy.y + (SCREEN_Y / 2) - TILE_SIZE); // center on player
+        cameraScript.UpdateCamera(playerTransform.x, playerTransform.y);
 
         // Set each objects local pos based on camera
         foreach (obj; gameObjects) {

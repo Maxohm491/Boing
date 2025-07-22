@@ -282,6 +282,8 @@ class Editor : Application {
         if (rbPressed && !wasRbPressed)
             grid.AddRow();   
 
+        writeln(grid.width, ", ", grid.height);
+
         wasPlusPressed = plusPressed;
         wasMinusPressed = minusPressed;
         wasLbPressed = lbPressed;

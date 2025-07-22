@@ -7,8 +7,8 @@ immutable float SCALE_FROM_720 = cast(float) SCREEN_Y / 720.0f; // Scale factor 
 // immutable int SCREEN_X = 1280; // screen pixels
 // immutable int SCREEN_Y = 720; // screen pixels
 
-private immutable int GRID_X = 40; // Number of tiles on screen at a time 
-private immutable int GRID_Y = 23;
+immutable int GRID_X = 40; // Number of tiles on screen at a time 
+immutable int GRID_Y = 23;
 
 immutable int PIXELS_PER_TILE = 8; // Pixels per tile
 
