@@ -91,7 +91,7 @@ class MainApplication
 // Main entry point
 void main()
 {
-    writeln("Welcome to Bamn Engine! Esc to edit levels.");
+    writeln("Welcome to BOING! Esc to edit levels.");
     MainApplication mainApp = new MainApplication();
     mainApp.Run();
     writeln("Goodbye!");
