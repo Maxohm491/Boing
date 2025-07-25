@@ -2,6 +2,7 @@ module physics.actor;
 
 import std.math;
 import Engine.component;
+import physics.solid;
 import bindbc.sdl;
 import std.conv;
 import std.stdio;
@@ -15,6 +16,14 @@ class Actor {
     this(TransformComponent transform, ColliderComponent collider) {
         this.transform = transform;
         this.collider = collider;
+    }
+
+    public bool IsRiding(Solid solid) {
+        assert(0, "IsRiding not implemented");
+    }
+
+    public void Squish() {
+        assert(0, "Squish not implemented");
     }
 
     void MoveX(float amount, void delegate() onCollide) {
@@ -69,86 +78,5 @@ class Actor {
                 move -= sign;
             }
         }
-    }
-
-    // Returns whether the actor is one pixel above a solid
-    bool IsOnGround() {
-        transform.y += 1;
-        collider.rect.y += 1; // Adjust the collider too
-        bool result = collider.CollidesWithSolid();
-
-        // Undo the move
-        transform.y -= 1;
-        collider.rect.y -= 1;
-
-        return result;
-    }
-
-    // [left, right, up, down]
-    bool[4] SolidsAround() {
-        bool[4] result = [false, false, false, false];
-
-        transform.y += 1;
-        collider.rect.y += 1; // Adjust the collider too
-        if (collider.CollidesWithSolid())
-            result[3] = true;
-
-        transform.y -= 2;
-        collider.rect.y -= 2;
-        if (collider.CollidesWithSolid())
-            result[2] = true;
-
-        transform.y += 1;
-        collider.rect.y += 1;
-        transform.x += 1;
-        collider.rect.x += 1;
-        if (collider.CollidesWithSolid())
-            result[1] = true;
-
-        transform.x -= 2;
-        collider.rect.x -= 2;
-        if (collider.CollidesWithSolid())
-            result[0] = true;
-
-        // Undo the move
-        transform.x += 1;
-        collider.rect.x += 1;
-
-        return result;
-    }
-
-    // [UL, UR, DL, DR]
-    bool[4] SolidCornersAround() {
-        bool[4] result = [false, false, false, false];
-
-        transform.y += 1;
-        collider.rect.y += 1;
-        transform.x += 1;
-        collider.rect.x += 1;
-        if (collider.CollidesWithSolid())
-            result[3] = true;
-
-        transform.y -= 2;
-        collider.rect.y -= 2;
-        if (collider.CollidesWithSolid())
-            result[1] = true;
-
-        transform.x -= 2;
-        collider.rect.x -= 2;
-        if (collider.CollidesWithSolid())
-            result[0] = true;
-
-        transform.y += 2;
-        collider.rect.y += 2;
-        if (collider.CollidesWithSolid())
-            result[2] = true;
-
-        // Undo the move
-        transform.x += 1;
-        collider.rect.x += 1;
-        transform.y -= 1;
-        collider.rect.y -= 1;
-
-        return result;
     }
 }

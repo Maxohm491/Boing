@@ -48,6 +48,7 @@ class ColliderComponent : IComponent {
 	ColliderComponent[]* solids;
 	TilemapCollider tilemapCollider = null;
 	GameObject* tilemap = null;
+	bool active = true;
 	string[] mCollisions;
 
 	this(GameObject owner) {
@@ -58,6 +59,10 @@ class ColliderComponent : IComponent {
 	void Update() {
 		rect.x = mTransformRef.worldPos.x + offset.x;
 		rect.y = mTransformRef.worldPos.y + offset.y;
+	}
+
+	bool overlaps(ColliderComponent other) {
+		return SDL_HasIntersection(&rect, &(other.rect)) != 0;
 	}
 
 	bool CollidesWithSolid() {
@@ -77,7 +82,7 @@ class ColliderComponent : IComponent {
 		if (solids is null)
 			return false;
 		foreach (solid; *solids) {
-			if (SDL_HasIntersection(&rect, &(solid.rect))) {
+			if (solid.active && SDL_HasIntersection(&rect, &(solid.rect))) {
 				return true;
 			}
 		}
@@ -164,7 +169,7 @@ class SpriteComponent : IComponent {
 			long[] sequence = json["frames"][animName].array.map!(a => a.integer).array;
 			mFrameNumbers[animName] = sequence;
 
-			if(animName in json["durations"].object) {
+			if("durations" in json.object && animName in json["durations"].object) {
 				foreach (i; mFrameNumbers[animName]) {
 					mFrames[i].mDuration = json["durations"][animName].integer;
 				}

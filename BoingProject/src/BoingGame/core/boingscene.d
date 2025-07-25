@@ -7,6 +7,8 @@ import Engine.gameobject;
 import Engine.gameapplication;
 import Engine.camerascript;
 import BoingGame.boingcamera;
+import physics;
+import core.factories;
 import scripts;
 import constants;
 import std.algorithm;
@@ -23,6 +25,8 @@ import std.stdio;
 class BoingScene : Scene {
     SDL_Point mSpawnPoint;
     GameObject tilemap;
+    ColliderComponent[] solids; // For collision detection
+    Actor[] actors;
 
     this(SDL_Renderer* r, int sceneIndex, void delegate() onComplete) {
         super(r, onComplete);
@@ -90,7 +94,7 @@ class BoingScene : Scene {
         // collider.rect.h = (PIXELS_PER_TILE * 5) / 8;
         // collider.offset.x = 0;
         // collider.offset.y = (PIXELS_PER_TILE * 3) / 8;
-        
+
         collider.solids = &solids; // Set the pointer to the dynamic array of solids
         collider.tilemap = &tilemap;
 
@@ -102,6 +106,8 @@ class BoingScene : Scene {
         playScript.mTilemap = cast(TilemapCollider) tilemap.GetComponent(
             ComponentType.TILEMAP_COLLIDER);
         player.AddComponent!(ComponentType.SCRIPT)(playScript);
+
+        actors ~= playScript.actor;
 
         return player;
     }
@@ -235,6 +241,11 @@ class BoingScene : Scene {
 
         AddGameObject(tilemap);
         AddGameObject(MakePlayer());
+
+        auto plat = CreateMovingSolid("movingSolid1", SDL_Point(0, 0), SDL_Point(64, 0), mRendererRef);
+        AddGameObject(plat);
+        solids ~= cast(ColliderComponent) plat.GetComponent(ComponentType.COLLIDER);
+        (cast(MovingPlatform) plat.GetComponent(ComponentType.SCRIPT)).solid.actors = &actors;
 
         cameraScript = new BoingCamera();
         (cast(BoingCamera) cameraScript).left = 0; // Set the min camera position

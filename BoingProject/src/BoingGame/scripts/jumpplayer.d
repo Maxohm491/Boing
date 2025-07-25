@@ -23,7 +23,7 @@ class JumpPlayer : ScriptComponent {
     GameObject mOwner;
     TransformComponent mTransformRef;
     ColliderComponent mColliderRef;
-    Actor actor;
+    PlayerActor actor;
     SpriteComponent mSpriteRef;
     InputComponent mInputRef;
     TilemapCollider mTilemap;
@@ -57,7 +57,7 @@ class JumpPlayer : ScriptComponent {
         mColliderRef = cast(ColliderComponent) owner.GetComponent(ComponentType.COLLIDER);
         mInputRef = cast(InputComponent) mOwner.GetComponent(ComponentType.INPUT);
         mSpriteRef = cast(SpriteComponent) mOwner.GetComponent(ComponentType.SPRITE);
-        actor = new Actor(mTransformRef, mColliderRef);
+        actor = new PlayerActor(mTransformRef, mColliderRef);
 
         mSpriteRef.SetAnimation("fall");
     }

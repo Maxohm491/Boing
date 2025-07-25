@@ -36,7 +36,6 @@ class Camera {
 /// Represents a scene containing game objects 
 class Scene {
     GameObject[] gameObjects; // Don't use a scene tree bc that's complicated
-    ColliderComponent[] solids; // For collision detection
     GameObject player;
     Camera camera;
     CameraScript cameraScript; // custom camera behavior

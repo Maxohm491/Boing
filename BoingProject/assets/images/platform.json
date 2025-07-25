@@ -1,0 +1,14 @@
+{
+    "filepath": "./assets/images/platform.bmp",
+    "format": {
+        "width": 8,
+        "height": 8,
+        "tileWidth": 8,
+        "tileHeight": 8
+    },
+    "frames": {
+        "default": [
+            0
+        ]
+    }
+}
