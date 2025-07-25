@@ -1,0 +1,27 @@
+{
+    "filepath": "./assets/images/character2.bmp",
+    "format": {
+        "width": 15,
+        "height": 10,
+        "tileWidth": 5,
+        "tileHeight": 5
+    },
+    "frames": {
+        "idle": [
+            0,
+            1
+        ],
+        "leftWall": [
+            3
+        ],
+        "rightWall": [
+            4
+        ],
+        "fall": [
+            2
+        ]
+    },
+    "durations": {
+        "idle": 30
+    }
+}

@@ -77,15 +77,19 @@ class BoingScene : Scene {
 
         transform.SetPos(mSpawnPoint.x, mSpawnPoint.y);
 
-        texture.LoadTexture("./assets/images/character.bmp", mRendererRef);
-        sprite.LoadMetaData("./assets/images/character.json");
+        texture.LoadTexture("./assets/images/character3.bmp", mRendererRef);
+        sprite.LoadMetaData("./assets/images/character3.json");
 
         sprite.mRendererRef = mRendererRef;
 
-        collider.rect.w = PIXELS_PER_TILE;
-        collider.rect.h = (PIXELS_PER_TILE * 5) / 8;
-        collider.offset.x = 0;
-        collider.offset.y = (PIXELS_PER_TILE * 3) / 8;
+        // collider.rect.w = PIXELS_PER_TILE;
+        // collider.rect.h = (PIXELS_PER_TILE * 5) / 8;
+        // collider.offset.x = 0;
+        // collider.offset.y = (PIXELS_PER_TILE * 3) / 8;
+        collider.rect.w = 3;
+        collider.rect.h = 4;
+        collider.offset.x = 1;
+        collider.offset.y = 1;
         collider.solids = &solids; // Set the pointer to the dynamic array of solids
         collider.tilemap = &tilemap;
 

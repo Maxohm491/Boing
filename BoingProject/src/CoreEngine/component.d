@@ -153,7 +153,7 @@ class SpriteComponent : IComponent {
 				newFrame.mRect.y = topBound;
 				newFrame.mRect.w = cast(int) formatJson["tileWidth"].integer;
 				newFrame.mRect.h = cast(int) formatJson["tileHeight"].integer;
-				newFrame.mDuration = 25;
+				newFrame.mDuration = 1; // default length of 1 frame
 				mFrames ~= newFrame;
 			}
 		}
@@ -163,6 +163,12 @@ class SpriteComponent : IComponent {
 			// Funny one liner
 			long[] sequence = json["frames"][animName].array.map!(a => a.integer).array;
 			mFrameNumbers[animName] = sequence;
+
+			if(animName in json["durations"].object) {
+				foreach (i; mFrameNumbers[animName]) {
+					mFrames[i].mDuration = json["durations"][animName].integer;
+				}
+			}
 
 			// Set default animation to a random one (useful if there's just one)
 			mCurrentAnimationName = animName;
@@ -273,6 +279,7 @@ class InputComponent : IComponent {
 }
 
 class TransformComponent : IComponent {
+	// Rectangle origin at the upper left corner
 	SDL_Point screenPos;
 	SDL_Point worldPos;
 	alias worldPos this;

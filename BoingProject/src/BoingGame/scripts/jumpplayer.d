@@ -59,7 +59,7 @@ class JumpPlayer : ScriptComponent {
         mSpriteRef = cast(SpriteComponent) mOwner.GetComponent(ComponentType.SPRITE);
         actor = new Actor(mTransformRef, mColliderRef);
 
-        mSpriteRef.SetAnimation("idle");
+        mSpriteRef.SetAnimation("fall");
     }
 
     override void Update() {
@@ -127,6 +127,8 @@ class JumpPlayer : ScriptComponent {
             if (!actor.IsOnGround) {
                 // if we walk off a ledge this triggers
                 state = PlayerState.FREEFALL;
+                mSpriteRef.SetAnimation("fall");
+
                 coyoteTime = 0;
             } else {
                 vel_y = 0; // Reset vertical velocity when grounded
@@ -141,7 +143,6 @@ class JumpPlayer : ScriptComponent {
 
             if (didJump) {
                 WallJump(leftWalled);
-                mSpriteRef.SetAnimation("idle");
             }
 
             if ((mInputRef.rightPressed && leftWalled) || (mInputRef.leftPressed && !leftWalled) || mInputRef
@@ -149,7 +150,7 @@ class JumpPlayer : ScriptComponent {
                 // If we press left or right, we leave the wall
                 state = PlayerState.FREEFALL;
                 coyoteWallTime = 0;
-                mSpriteRef.SetAnimation("idle");
+                mSpriteRef.SetAnimation("fall");
             }
             break;
 
@@ -165,6 +166,7 @@ class JumpPlayer : ScriptComponent {
         coyoteWallTime = coyoteWallFrames + 1;
 
         state = PlayerState.JUMPING;
+        mSpriteRef.SetAnimation("fall");
     }
 
     void WallJump(bool leftWall) {
@@ -173,6 +175,7 @@ class JumpPlayer : ScriptComponent {
         vel_x = leftWall ? jumpBoost : -jumpBoost;
         coyoteTime = coyoteFrames + 1;
         coyoteWallTime = coyoteWallFrames + 1;
+        mSpriteRef.SetAnimation("fall");
 
         state = PlayerState.JUMPING;
     }
@@ -183,6 +186,7 @@ class JumpPlayer : ScriptComponent {
 
         state = PlayerState.GROUNDED;
         vel_y = 0; // Reset vertical velocity
+        mSpriteRef.SetAnimation("idle");
     }
 
     void OnVerticalCollision() {
