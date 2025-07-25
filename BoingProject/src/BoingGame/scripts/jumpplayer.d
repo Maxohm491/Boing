@@ -30,13 +30,13 @@ class JumpPlayer : ScriptComponent {
 
     bool leftWalled = false; // only meaningful when state == PlayerState.WALLEd
     int coyoteWallTime = 0;
-    float runSpeed = 1;
-    float runAccel = 0.24;
-    float airAccel = 0.14;
+    float runSpeed = 1.2;
+    float runAccel = 0.31;
+    float airAccel = 0.31;
     float minJumpSpeed = 0.9;
-    float maxJumpSpeed = 2.5; // To make a nice fun jump set max when they hit space and min when they let go
-    float maxVertSpeed = 2.5;
-    float airFriction = 0.06;
+    float maxJumpSpeed = 2.7; // To make a nice fun jump set max when they hit space and min when they let go
+    float maxVertSpeed = 2.7;
+    float airFriction = 0.09;
     float groundFriction = 0.2;
     float jumpBoost = 1.3;
     float gravity = 0.09;
@@ -82,7 +82,7 @@ class JumpPlayer : ScriptComponent {
                 vel_x = clamp(vel_x + airAccel * mInputRef.GetDir(), -runSpeed, runSpeed);
         }
 
-        if (vel_x != 0 && state != PlayerState.WALLED) 
+        if (vel_x != 0 && state != PlayerState.WALLED)
             mSpriteRef.flipped = vel_x < 0;
 
         if (state != PlayerState.GROUNDED && state != PlayerState.WALLED)
@@ -144,12 +144,13 @@ class JumpPlayer : ScriptComponent {
                 mSpriteRef.SetAnimation("idle");
             }
 
-            if((mInputRef.rightPressed && leftWalled) || (mInputRef.leftPressed && !leftWalled) || mInputRef.downPressed) {
+            if ((mInputRef.rightPressed && leftWalled) || (mInputRef.leftPressed && !leftWalled) || mInputRef
+                .downPressed) {
                 // If we press left or right, we leave the wall
                 state = PlayerState.FREEFALL;
                 coyoteWallTime = 0;
                 mSpriteRef.SetAnimation("idle");
-            } 
+            }
             break;
 
         default:
@@ -200,6 +201,11 @@ class JumpPlayer : ScriptComponent {
     }
 
     void OnSideCollision() {
+        if (mInputRef.downPressed) {
+            // If we press down don't stick to walls
+            vel_x = 0;
+            return;
+        }
         if (vel_x < 0) {
             leftWalled = true;
             mSpriteRef.flipped = false;

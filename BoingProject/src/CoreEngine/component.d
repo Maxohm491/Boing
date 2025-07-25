@@ -1,4 +1,3 @@
-// Sourced with modifications from the class github at 06_gameobject/full_component/component.d
 module Engine.component;
 
 import std.stdio;
@@ -12,7 +11,6 @@ import Engine.resourcemanager;
 import Engine.tilemapcomponents;
 import std.math;
 import constants;
-// import linear;
 
 enum ComponentType {
 	TEXTURE,
