@@ -146,12 +146,18 @@ class JumpPlayer : ScriptComponent {
                 WallJump(leftWalled);
             }
 
+            //TODO: efficiency
+            auto around = actor.SolidsAround();
+            // If we are touching a solid, we can leave the wall
+            if (!around[0] && leftWalled) { // left
+                WallToFall();
+            } else if (!around[1] && !leftWalled) { // right
+                WallToFall();
+            }
+
             if ((mInputRef.rightPressed && leftWalled) || (mInputRef.leftPressed && !leftWalled) || mInputRef
                 .downPressed) {
-                // If we press left or right, we leave the wall
-                state = PlayerState.FREEFALL;
-                coyoteWallTime = 0;
-                mSpriteRef.SetAnimation("fall");
+                WallToFall();
             }
             break;
 
@@ -222,6 +228,7 @@ class JumpPlayer : ScriptComponent {
         }
 
         vel_x = 0;
+        vel_y = 0;
 
         state = PlayerState.WALLED; // Reset to walled state
 
@@ -240,6 +247,12 @@ class JumpPlayer : ScriptComponent {
                 GameObject.GetGameObject(obj).alive = false;
             }
         }
+    }
+
+    void WallToFall() {
+        state = PlayerState.FREEFALL;
+        coyoteWallTime = 0;
+        mSpriteRef.SetAnimation("fall");
     }
 
     void Die() {

@@ -51,7 +51,7 @@ class Solid {
                             actor.MoveX(moveX, null);
                         }
                     }
-                } else {
+                } else if (moveX < 0) {
                     foreach (Actor actor; *actors) {
                         if (actor.collider.overlaps(collider)) {
                             // Push left
@@ -65,10 +65,37 @@ class Solid {
                 }
             }
 
-            // if (moveY != 0) {
-            //     // Do y-axis movement
-            //     …
-            // }
+            if (moveY != 0) {
+                yRemainder -= moveY;
+                transform.Translate(0, moveY);
+                collider.rect.y += moveY; // Adjust the collider too
+
+                if (moveY > 0) {
+                    foreach (Actor actor; *actors) {
+                        if (actor.collider.overlaps(collider)) {
+
+                            // Push down
+                            actor.MoveY(collider.rect.y + collider.rect.h - actor.collider.rect.y, &(
+                                    actor.Squish));
+                        } else if (riding.canFind(actor)) {
+
+                            // Carry down
+                            actor.MoveY(moveY, null);
+                        }
+                    }
+                } else if (moveY < 0){
+                    foreach (Actor actor; *actors) {
+                        if (actor.collider.overlaps(collider)) {
+                            // Push up
+                            actor.MoveY(collider.rect.y - actor.collider.rect.y - actor.collider.rect.h, &(
+                                    actor.Squish));
+                        } else if (riding.canFind(actor)) {
+                            // Carry up
+                            actor.MoveY(moveY, null);
+                        }
+                    }
+                }
+            }
 
             // Re-enable collisions for this Solid
             collider.active = true;

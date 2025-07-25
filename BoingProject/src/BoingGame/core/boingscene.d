@@ -243,7 +243,7 @@ class BoingScene : Scene {
         AddGameObject(tilemap);
         AddGameObject(MakePlayer());
 
-        auto plat = CreateMovingSolid("movingSolid1", SDL_Point(0, 0), SDL_Point(64, 0), mRendererRef);
+        auto plat = CreateMovingSolid("movingSolid1", SDL_Point(0, 0), SDL_Point(64, 64), mRendererRef);
         AddGameObject(plat);
         solids ~= cast(ColliderComponent) plat.GetComponent(ComponentType.COLLIDER);
         (cast(MovingPlatform) plat.GetComponent(ComponentType.SCRIPT)).solid.actors = &actors;

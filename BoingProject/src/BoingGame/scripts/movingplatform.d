@@ -6,6 +6,7 @@ import Engine.gameobject;
 import std.math;
 import bindbc.sdl;
 import physics;
+import std.stdio;
 
 class MovingPlatform : ScriptComponent {
     float speed;
@@ -40,12 +41,18 @@ class MovingPlatform : ScriptComponent {
         solid.Move(x, y);
 
         // Check if the platform has moved far enough to reverse direction
-        if ((mTransformRef.x == dest.x && goingTo) || (mTransformRef.x == src.x && !goingTo)) {
-            // Snap to the destination to avoid floating point issues
+        if (
+            (goingTo && 
+                (sgn(mTransformRef.x - dest.x) == sgn(dest.x - src.x)) && 
+                (sgn(mTransformRef.y - dest.y) == sgn(dest.y - src.y))) || 
+            (!goingTo && 
+                (sgn(mTransformRef.x - src.x) == sgn(src.x - dest.x)) && 
+                (sgn(mTransformRef.y - src.y) == sgn(src.y - dest.y)))) {
+            // Snap to the destination to avoid rounding issues
             if (goingTo) {
-                mTransformRef.SetPos(dest.x, dest.y);
+                solid.Move(dest.x - mTransformRef.x, dest.y - mTransformRef.y);
             } else {
-                mTransformRef.SetPos(src.x, src.y);
+                solid.Move(src.x - mTransformRef.x, src.y - mTransformRef.y);
             }
             goingTo = !goingTo;
         }
