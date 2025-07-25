@@ -42,16 +42,15 @@ class BoingScene : Scene {
     override void Update() {
         // Update logic specific to BoingGame
         super.Update();
-
         // Check if player is missing, respawn if needed
         bool playerExists = false;
         foreach (obj; gameObjects) {
             if (obj.GetName() == "player") {
                 playerExists = true;
-                break;
             }
         }
         if (!playerExists) {
+            actors.length = 0;
             AddGameObject(MakePlayer());
         }
 
@@ -90,6 +89,8 @@ class BoingScene : Scene {
         collider.rect.h = 4;
         collider.offset.x = 0;
         collider.offset.y = 1;
+        collider.rect.x = transform.x;
+        collider.rect.y = transform.y;
         // collider.rect.w = PIXELS_PER_TILE;
         // collider.rect.h = (PIXELS_PER_TILE * 5) / 8;
         // collider.offset.x = 0;

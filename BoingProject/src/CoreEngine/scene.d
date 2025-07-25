@@ -76,6 +76,9 @@ class Scene {
         // Check deaths
         for (auto i = gameObjects.length; i > 0; i -= 1) {
             if (!gameObjects[i - 1].alive) {
+                if (gameObjects[i - 1] is player) {
+                    player = null; // Player is dead, reset it
+                }
                 gameObjects = gameObjects.remove(i - 1);
             }
         }

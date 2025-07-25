@@ -5,6 +5,7 @@ import physics.actor;
 import Engine.component;
 import bindbc.sdl;
 import std.math;
+import std.stdio;
 
 class Solid {
     float xRemainder = 0.0f;
@@ -35,12 +36,17 @@ class Solid {
             if (moveX != 0) {
                 xRemainder -= moveX;
                 transform.Translate(moveX, 0);
+                collider.rect.x += moveX; // Adjust the collider too
+
                 if (moveX > 0) {
                     foreach (Actor actor; *actors) {
                         if (actor.collider.overlaps(collider)) {
+
                             // Push right
-                            actor.MoveX(collider.rect.x + collider.rect.w - actor.collider.rect.x, &(actor.Squish));
+                            actor.MoveX(collider.rect.x + collider.rect.w - actor.collider.rect.x, &(
+                                    actor.Squish));
                         } else if (riding.canFind(actor)) {
+
                             // Carry right
                             actor.MoveX(moveX, null);
                         }
@@ -48,10 +54,11 @@ class Solid {
                 } else {
                     foreach (Actor actor; *actors) {
                         if (actor.collider.overlaps(collider)) {
-                            // Push right
-                            actor.MoveX(collider.rect.x - actor.collider.rect.x - actor.collider.rect.w, &(actor.Squish));
+                            // Push left
+                            actor.MoveX(collider.rect.x - actor.collider.rect.x - actor.collider.rect.w, &(
+                                    actor.Squish));
                         } else if (riding.canFind(actor)) {
-                            // Carry right
+                            // Carry left
                             actor.MoveX(moveX, null);
                         }
                     }

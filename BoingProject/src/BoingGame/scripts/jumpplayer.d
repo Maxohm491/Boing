@@ -58,6 +58,7 @@ class JumpPlayer : ScriptComponent {
         mInputRef = cast(InputComponent) mOwner.GetComponent(ComponentType.INPUT);
         mSpriteRef = cast(SpriteComponent) mOwner.GetComponent(ComponentType.SPRITE);
         actor = new PlayerActor(mTransformRef, mColliderRef);
+        actor.Squished = &Die; // Set the squish delegate to the Die method
 
         mSpriteRef.SetAnimation("fall");
     }
@@ -239,5 +240,10 @@ class JumpPlayer : ScriptComponent {
                 GameObject.GetGameObject(obj).alive = false;
             }
         }
+    }
+
+    void Die() {
+        // writeln("Player died!");
+        mOwner.alive = false;
     }
 }

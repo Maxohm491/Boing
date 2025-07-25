@@ -46,7 +46,6 @@ class Actor {
 
                     if (onCollide != null)
                         onCollide();
-
                     break;
                 }
                 move -= sign;

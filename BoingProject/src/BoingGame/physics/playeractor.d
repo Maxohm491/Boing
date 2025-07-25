@@ -7,6 +7,8 @@ import std.stdio;
 import bindbc.sdl;
 
 class PlayerActor : Actor {
+    void delegate() Squished; // Delegate for squish behavior
+
     // Player-specific actor behavior
     this(TransformComponent transform, ColliderComponent collider) {
         super(transform, collider);
@@ -44,7 +46,8 @@ class PlayerActor : Actor {
     }
 
     override void Squish() {
-        writeln("squished!");
+        assert(Squished !is null, "Squished delegate is not set");
+        Squished();
     }
 
     // Returns whether the plaer is one pixel above a solid
