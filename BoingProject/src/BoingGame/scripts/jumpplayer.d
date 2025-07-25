@@ -223,6 +223,11 @@ class JumpPlayer : ScriptComponent {
         vel_x = 0;
 
         state = PlayerState.WALLED; // Reset to walled state
+
+        if (jumpBufferCounter >= 0) {
+            jumpBufferCounter = -1; // Reset jump buffer
+            WallJump(leftWalled);
+        }
     }
 
     void HandleCollisions() {
