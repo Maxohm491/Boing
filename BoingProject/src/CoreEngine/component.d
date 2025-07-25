@@ -46,6 +46,7 @@ class ColliderComponent : IComponent {
 	SDL_Rect rect;
 	SDL_Point offset;
 	ColliderComponent[]* solids;
+	GameObject[]* solidObjects; // For checking collisions with other game objects
 	TilemapCollider tilemapCollider = null;
 	GameObject* tilemap = null;
 	bool active = true;
@@ -79,10 +80,11 @@ class ColliderComponent : IComponent {
 		if (tilemapCollider.CheckRect(&rect)) {
 			return true;
 		}
-		if (solids is null)
+		if (solidObjects is null)
 			return false;
-		foreach (solid; *solids) {
-			if (solid.active && SDL_HasIntersection(&rect, &(solid.rect))) {
+		foreach (solid; *solidObjects) {
+			auto collider = cast(ColliderComponent) solid.GetComponent(ComponentType.COLLIDER);
+			if (collider.active && SDL_HasIntersection(&rect, &(collider.rect))) {
 				return true;
 			}
 		}

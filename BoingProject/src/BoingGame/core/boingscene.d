@@ -19,17 +19,27 @@ import std.conv;
 import std.file;
 import std.random;
 import std.math;
+import std.conv;
 
 import std.stdio;
+
+enum Categories {
+    COLLIDABLE,
+    SOLID,
+    ACTOR
+}
+
+alias Categorized = GameObjectCollection!(Categories);
 
 class BoingScene : Scene {
     SDL_Point mSpawnPoint;
     GameObject tilemap;
-    ColliderComponent[] solids; // For collision detection
     Actor[] actors;
 
     this(SDL_Renderer* r, int sceneIndex, void delegate() onComplete) {
         super(r, onComplete);
+
+        gameObjs = new GameObjectCollection!(Categories);
 
         LoadSceneFromJson("./assets/scenes/scene" ~ to!string(sceneIndex) ~ ".json");
     }
@@ -40,23 +50,31 @@ class BoingScene : Scene {
     }
 
     override void Update() {
-        // Update logic specific to BoingGame
+        // Collider logic specific to BoingGame
+        foreach (obj; *((cast(Categorized) gameObjs).AccessCategory(Categories.COLLIDABLE))) {
+            auto collider = cast(ColliderComponent) obj.GetComponent(
+                ComponentType.COLLIDER);
+
+            if (collider !is null)
+                collider.CheckCollisions(gameObjs.getGameObjects());
+        }
+
         super.Update();
         // Check if player is missing, respawn if needed
         bool playerExists = false;
-        foreach (obj; gameObjects) {
+        foreach (obj; gameObjs.getGameObjects()) {
             if (obj.GetName() == "player") {
                 playerExists = true;
             }
         }
         if (!playerExists) {
             actors.length = 0;
-            AddGameObject(MakePlayer());
+            (cast(Categorized) gameObjs).AddGameObject(MakePlayer(), [Categories.ACTOR, Categories.COLLIDABLE]);
         }
 
         // Check if any apple is missing, call completion if needed
         bool appleExists = false;
-        foreach (obj; gameObjects) {
+        foreach (obj; gameObjs.getGameObjects()) {
             if (obj.GetName().startsWith("apple")) {
                 appleExists = true;
                 break;
@@ -96,7 +114,7 @@ class BoingScene : Scene {
         // collider.offset.x = 0;
         // collider.offset.y = (PIXELS_PER_TILE * 3) / 8;
 
-        collider.solids = &solids; // Set the pointer to the dynamic array of solids
+        collider.solids = &((cast(Categorized) gameObjs)); // Set the pointer to the dynamic array of solids
         collider.tilemap = &tilemap;
 
         auto input = new InputComponent(player);
