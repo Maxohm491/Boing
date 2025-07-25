@@ -249,6 +249,19 @@ class JumpPlayer : ScriptComponent {
         }
     }
 
+    // float[2] GetRiddenVelocity() {
+    //     // Returns the velocity of the player when riding a moving platform
+    //     // This is used to calculate the player's velocity when jumping off a platform
+    //     auto collider = cast(ColliderComponent) mOwner.GetComponent(ComponentType.COLLIDER);
+    //     if (collider !is null) {
+    //         auto solid = collider.GetSolid();
+    //         if (solid !is null) {
+    //             return [solid.vel_x, solid.vel_y];
+    //         }
+    //     }
+    //     return [0, 0];
+    // }
+
     void WallToFall() {
         state = PlayerState.FREEFALL;
         coyoteWallTime = 0;

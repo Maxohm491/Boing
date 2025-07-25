@@ -17,12 +17,6 @@ import std.math;
 
 import std.stdio;
 
-/// Stores simple key-value integer game state.
-struct GameState {
-    /// Maps a string key to an integer value.
-    int[string] mIntMap;
-}
-
 class Camera {
     SDL_Point pos;
     alias pos this;
@@ -32,6 +26,61 @@ class Camera {
         pos.y = y;
     }
 }
+
+interface IGameObjectCollection {
+    GameObject[] getGameObjects();
+    void RemoveDead();
+}
+
+// Inherit this to allow for the categorization of game objects
+// Each scene has one
+// Base collection that works for any enum
+class GameObjectCollection(P)  {
+    alias Property = P;
+
+    GameObject[] gameObjects;
+    GameObject[][Property] categorizedObjects;
+
+    this() {
+        foreach (prop; EnumMembers!Property)
+            categorizedObjects[prop] = [];
+    }
+
+    void AddGameObject(GameObject go, Property[] props = Property[]) {
+        gameObjects ~= go;
+
+        foreach (prop; props)
+            categorizedObjects[prop] ~= go;
+    }
+
+    void RemoveDead() {
+        for (int i = gameObjects.length - 1; i >= 0; i--) {
+            if (!gameObjects[i].alive) {
+                foreach (prop; EnumMembers!Property) {
+                    auto arrPtr = prop in categorizedObjects;
+                    if (arrPtr !is null) {
+                        auto arr = arrPtr;
+                        foreach (j, obj; *arr) {
+                            if (obj is gameObjects[i]) {
+                                *arr = (*arr)[0 .. j] ~ (*arr)[j + 1 .. $];
+                                break;
+                            }
+                        }
+                    }
+                }
+                gameObjects = gameObjects[0 .. i] ~ gameObjects[i + 1 .. $];
+            }
+        }
+    }
+
+    GameObject[]* AccessCategory(Property prop) {
+        return &categorizedObjects[prop];
+    }
+}
+
+enum BaseProps { COLLIDABLE }
+
+alias BaseCollection = GameObjectCollection!BaseProps;
 
 /// Represents a scene containing game objects 
 class Scene {
@@ -60,7 +109,7 @@ class Scene {
     void Update() {
         if (freezeFrames > 0) {
             freezeFrames -= 1;
-            return; 
+            return;
         }
 
         foreach (obj; gameObjects) {
