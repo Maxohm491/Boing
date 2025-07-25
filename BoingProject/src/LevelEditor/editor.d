@@ -73,7 +73,7 @@ class Editor : Application {
 
         // Load tilemap
         Texture tileTexture = new Texture();
-        tileTexture.LoadTexture("./assets/images/tilemap2.bmp", mRendererRef);
+        tileTexture.LoadTexture("./assets/images/tilemapblank.bmp", mRendererRef);
         tilemap = new Tilemap("./assets/images/tilemap.json", mRendererRef, tileTexture);
 
         // Initialize the editable tile grid

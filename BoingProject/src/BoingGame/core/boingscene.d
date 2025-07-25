@@ -221,7 +221,7 @@ class BoingScene : Scene {
 
         transform.SetPos(0, 0); // Always 0, 0 but needs to be here for camera purposes
 
-        texture.LoadTexture("./assets/images/tilemap2.bmp", mRendererRef);
+        texture.LoadTexture("./assets/images/tilemapblank.bmp", mRendererRef);
         sprite.LoadMetaData("./assets/images/tilemap.json");
 
         sprite.mRendererRef = mRendererRef;

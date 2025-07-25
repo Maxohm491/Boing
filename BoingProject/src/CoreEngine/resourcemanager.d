@@ -4,18 +4,9 @@ module Engine.resourcemanager;
 import bindbc.sdl;
 import std.string;
 import std.stdio;
+import Engine.colors;
 
 struct ResourceManager {
-    // Static color replacement map: maps (srcR,srcG,srcB) to (dstR,dstG,dstB)
-    struct RGB {
-        ubyte r, g, b;
-    }
-
-    static ubyte[3][RGB] colorReplacementMap = [
-        RGB(255, 0, 0): [0, 255, 0],
-        RGB(0, 0, 255): [255, 255, 0],
-    ];
-
     static ResourceManager* GetInstance() {
         if (mInstance is null) {
             mInstance = new ResourceManager();
@@ -30,8 +21,9 @@ struct ResourceManager {
             SDL_Surface* surface = SDL_LoadBMP(filename.toStringz);
             if (surface is null) {
                 writeln("Failed to load BMP: ", SDL_GetError());
-                return null;
+                assert(0);
             }
+
             SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface.format, 0, 0, 255)); // blue is clear
             SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
             SDL_FreeSurface(surface);

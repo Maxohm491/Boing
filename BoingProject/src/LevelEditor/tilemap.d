@@ -21,6 +21,7 @@ class Texture {
     void LoadTexture(string filename, SDL_Renderer* r) {
         mRendererRef = r;
         SDL_Surface* surface = SDL_LoadBMP(filename.toStringz);
+        assert(surface !is null, "Failed to load tilemap");
         SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface.format, 0, 0, 0)); // Black is clear
         mTexture = SDL_CreateTextureFromSurface(r, surface);
         SDL_FreeSurface(surface);
